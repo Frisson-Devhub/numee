@@ -1,0 +1,318 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+  RECRUITER
+}
+
+enum CompanyMemberRole {
+  OWNER
+  RECRUITER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum JobApplicationStatus {
+  APPLIED
+  REVIEWING
+  REJECTED
+  SHORTLISTED
+  HIRED
+}
+
+enum EmbeddingStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  emailOrPhone String   @unique @map("email_or_phone")
+  role         UserRole?
+  dateOfBirth  String?  @map("date_of_birth")
+  gender       String?
+  passwordHash          String    @map("password_hash")
+  otp                   String?
+  otpExpiry             DateTime?
+  otpAttempts           Int       @default(0) @map("otp_attempts")
+  currentQuestionIndex  Int       @default(0) @map("current_question_index")
+  questionnaireAnswers  Json?     @map("questionnaire_answers")
+
+  linkedInUrl             String?   @map("linkedin_url")
+  resumeUrl               String?   @map("resume_url")
+  agentQuestions          Json?     @map("agent_questions")
+
+  questionnaireResponses QuestionnaireResponse[]
+  assessments             Assessment[]
+  companyMemberships      CompanyMember[]
+  jobsCreated             Job[]          @relation("JobCreatedBy")
+  activityLogs            ActivityLog[]
+  embedding               CandidateEmbedding?
+  jobApplications         JobApplication[]
+
+  lastLogin              DateTime? @map("last_login")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model QuestionnaireResponse {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  answers   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("questionnaire_responses")
+}
+
+model Assessment {
+  id                        String   @id @default(cuid())
+  userId                    String   @map("user_id")
+  user                      User     @relation(fields: [userId], references: [id])
+  assessmentId              String   @map("assessment_id")
+  assessmentQuestionAnswers Json?    @map("assessment_question_answers")
+  assessmentData            Json?    @map("assessment_data")
+  milestoneStatus           Json?    @map("milestone_status")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, assessmentId])
+  @@map("assessment")
+}
+
+model Company {
+  id                String   @id @default(cuid())
+  name              String
+  website           String?
+  industry          String?
+  size              String?
+  description       String?
+  location          String?
+  logoUrl           String?  @map("logo_url")
+  hiringCategories  Json?    @map("hiring_categories")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  members      CompanyMember[]
+  invitations  Invitation[]
+  jobs         Job[]
+  activityLogs ActivityLog[]
+
+  @@map("companies")
+}
+
+model CompanyMember {
+  id        String            @id @default(cuid())
+  userId    String            @map("user_id")
+  companyId String            @map("company_id")
+  role      CompanyMemberRole
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, userId])
+  @@index([userId])
+  @@map("company_members")
+}
+
+model Invitation {
+  id        String            @id @default(cuid())
+  companyId String            @map("company_id")
+  email     String
+  role      CompanyMemberRole @default(RECRUITER)
+  token     String            @unique
+  status    InvitationStatus  @default(PENDING)
+  expiresAt DateTime          @map("expires_at")
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([email])
+  @@map("invitations")
+}
+
+model Industry {
+  id              String          @id @default(cuid())
+  name            String          @unique
+  slug            String          @unique
+  description     String?
+  isActive        Boolean         @default(true) @map("is_active")
+  qdrantPointId   String?         @map("qdrant_point_id")
+  embeddingStatus EmbeddingStatus @default(PENDING) @map("embedding_status")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  jobRoles JobRole[]
+  jobs     Job[]
+
+  @@map("industries")
+}
+
+model JobRole {
+  id              String          @id @default(cuid())
+  name            String
+  slug            String          @unique
+  description     String?
+  industryId      String?         @map("industry_id")
+  isActive        Boolean         @default(true) @map("is_active")
+  qdrantPointId   String?         @map("qdrant_point_id")
+  embeddingStatus EmbeddingStatus @default(PENDING) @map("embedding_status")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  industry Industry? @relation(fields: [industryId], references: [id], onDelete: SetNull)
+  jobs     Job[]
+
+  @@index([industryId])
+  @@map("job_roles")
+}
+
+model Job {
+  id               String    @id @default(cuid())
+  companyId        String    @map("company_id")
+  createdById      String    @map("created_by_id")
+  industryId       String?   @map("industry_id")
+  jobRoleId        String?   @map("job_role_id")
+  title            String
+  department       String?
+  employmentType   String?   @map("employment_type")
+  workMode         String?   @map("work_mode")
+  location         String?
+  experienceMin    Int?      @map("experience_min")
+  experienceMax    Int?      @map("experience_max")
+  noticePeriod     String?   @map("notice_period")
+  salaryMin        Int?      @map("salary_min")
+  salaryMax        Int?      @map("salary_max")
+  salaryCurrency   String?   @map("salary_currency")
+  salaryNegotiable Boolean   @default(false) @map("salary_negotiable")
+  description      String?   @db.Text
+  responsibilities String?
+  requirements     String?
+  benefits         String?
+  pipelineStages   Json?     @map("pipeline_stages")
+  status           JobStatus @default(DRAFT)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  company   Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy User           @relation("JobCreatedBy", fields: [createdById], references: [id])
+  industry  Industry?      @relation(fields: [industryId], references: [id], onDelete: SetNull)
+  jobRole   JobRole?       @relation(fields: [jobRoleId], references: [id], onDelete: SetNull)
+  skills    JobSkill[]
+  embedding JobEmbedding?
+  applications JobApplication[]
+
+  @@index([companyId])
+  @@index([createdById])
+  @@index([status])
+  @@index([industryId])
+  @@index([jobRoleId])
+  @@map("jobs")
+}
+
+model JobApplication {
+  id          String               @id @default(cuid())
+  jobId       String               @map("job_id")
+  candidateId String               @map("candidate_id")
+  status      JobApplicationStatus @default(APPLIED)
+  appliedAt   DateTime             @default(now()) @map("applied_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+
+  job       Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate User @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([candidateId, appliedAt])
+  @@index([jobId])
+  @@map("job_applications")
+}
+
+model JobSkill {
+  id       String  @id @default(cuid())
+  jobId    String  @map("job_id")
+  name     String
+  required Boolean @default(true)
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@map("job_skills")
+}
+
+model JobEmbedding {
+  id            String          @id @default(cuid())
+  jobId         String          @unique @map("job_id")
+  qdrantPointId String?         @map("qdrant_point_id")
+  model         String?
+  status        EmbeddingStatus @default(PENDING)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("job_embeddings")
+}
+
+model CandidateEmbedding {
+  id            String          @id @default(cuid())
+  userId        String          @unique @map("user_id")
+  qdrantPointId String?         @map("qdrant_point_id")
+  model         String?
+  status        EmbeddingStatus @default(PENDING)
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("candidate_embeddings")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  companyId String   @map("company_id")
+  actorId   String   @map("actor_id")
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  actor   User    @relation(fields: [actorId], references: [id])
+
+  @@index([companyId, createdAt])
+  @@index([actorId])
+  @@map("activity_logs")
+}
