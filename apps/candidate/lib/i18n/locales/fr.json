@@ -1,0 +1,227 @@
+{
+  "common": {
+    "language": {
+      "label": "Langue",
+      "english": "Anglais",
+      "german": "Allemand",
+      "french": "Français"
+    },
+    "loading": "Chargement...",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "sidebar": {
+    "dashboard": "Tableau de bord",
+    "courses": "Cours",
+    "jobs": "Emplois",
+    "profile": "Profil",
+    "signOut": "Se déconnecter"
+  },
+  "header": {
+    "viewProfile": "Voir le profil",
+    "careers": "Carrières"
+  },
+  "auth": {
+    "login": {
+      "title": "Bon retour",
+      "titleMobile": "Bon retour",
+      "subtitle": "Veuillez saisir vos informations pour vous connecter.",
+      "subtitleMobile": "Saisissez votre e-mail ou téléphone et votre mot de passe pour vous connecter",
+      "securityTitle": "Mise à jour de sécurité",
+      "securityMessage": "L'authentification à deux facteurs (2FA) est désormais requise pour tous les comptes Super Admin.",
+      "email": "E-mail professionnel",
+      "emailMobile": "E-mail ou numéro de téléphone",
+      "password": "Mot de passe",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié ?",
+      "forgotPasswordMobile": "Mot de passe oublié ?",
+      "signIn": "Se connecter",
+      "signInMobile": "Se connecter",
+      "signingIn": "Connexion en cours...",
+      "loggingIn": "Connexion en cours...",
+      "loginFailed": "Échec de la connexion",
+      "somethingWrong": "Une erreur s'est produite. Veuillez réessayer."
+    }
+  },
+  "dashboard": {
+    "loading": "Chargement. . .",
+    "unauthorized": "Veuillez vous connecter.",
+    "loadFailed": "Échec du chargement du tableau de bord.",
+    "startAssessment": "Commencer l'évaluation",
+    "assessmentClosed": "Évaluation fermée",
+    "assessmentComplete": "Évaluation terminée",
+    "selectAssessment": "Sélectionner une évaluation",
+    "competencyReport": {
+      "title": "Rapport d'analyse des compétences",
+      "subtitle": "Découvrez vos compétences clés et vos opportunités de développement.",
+      "viewCareerGoal": "Voir l'objectif de carrière",
+      "identified": "Compétences identifiées"
+    },
+    "personalSummary": {
+      "title": "Résumé personnel",
+      "subtitle": "Vos forces et vos axes de développement en un coup d'œil."
+    },
+    "careerRecommendations": {
+      "title": "Recommandations de carrière par IA",
+      "subtitle": "Des rôles alignés sur votre profil et vos aspirations."
+    },
+    "motivation": {
+      "title": "Profil de motivation",
+      "subtitle": "Ce qui vous anime dans votre parcours professionnel."
+    },
+    "matchScore": {
+      "title": "Score de correspondance",
+      "subtitle": "Votre adéquation avec les rôles recommandés."
+    },
+    "scoreDistribution": {
+      "title": "Répartition des scores",
+      "subtitle": "Score de force vs compétence"
+    },
+    "motivationReport": {
+      "title": "Rapport d'analyse de motivation",
+      "subtitle": "Comprenez ce qui guide vos actions et vos choix.",
+      "identified": "Motivations identifiées",
+      "strengthScore": "Score de force",
+      "occurrenceTitle": "Analyse de fréquence des motivations",
+      "occurrenceSubtitle": "Fréquence vs motivation"
+    },
+    "fitBest": {
+      "title": "Là où vous excellez",
+      "subtitle": "Là où vos capacités ont le plus d'impact",
+      "personalSummary": "Votre résumé personnel"
+    },
+    "assessmentProgress": "Progression de l'évaluation"
+  },
+  "assessmentProgressBar": {
+    "progress": "Progression",
+    "ariaLabel": "Progression de l'évaluation",
+    "continueAssessment": "Continuer l'évaluation",
+    "startNewAssessment": "Commencer une nouvelle évaluation",
+    "milestoneTitleFirst": "Commencez votre première évaluation",
+    "milestoneTitle": "Nouvelle évaluation déjà commencée",
+    "milestoneBodyFirst": "Commencez votre première évaluation et complétez au moins 10 % avant de pouvoir en commencer une nouvelle.",
+    "milestoneBody": "Complétez au moins une étape de votre dernière évaluation avant d'en commencer une nouvelle.",
+    "limitTitle": "Limite d'évaluations atteinte",
+    "limitBody": "Vous avez atteint le maximum de {max} évaluations. Terminez ou consultez vos évaluations existantes dans le menu déroulant ci-dessus.",
+    "ok": "OK"
+  },
+  "aiQuestionnaire": {
+    "page": {
+      "title": "Questionnaire IA",
+      "subtitle": "Parlez à Alice de Numee — assistante IA avec avatar. Obtenez de l'aide pour votre questionnaire d'inscription."
+    },
+    "assistant": {
+      "status": {
+        "readyToConnect": "Prêt à se connecter",
+        "disconnected": "Déconnecté",
+        "connecting": "Connexion en cours...",
+        "assessmentClosed": "Cette évaluation est fermée et ne peut pas être reprise.",
+        "connected": "Connecté — Session sécurisée établie.",
+        "supportNotified": "Support notifié — un conseiller clientèle vous rejoindra sous peu.",
+        "connectionFailed": "Échec de la connexion",
+        "supportFailed": "Échec de la connexion au support"
+      },
+      "avatarPlaceholder": "Cliquez sur « Démarrer la conversation » pour commencer l'évaluation",
+      "avatarConnecting": "Connexion à votre assistante…",
+      "startConversation": "Démarrer la conversation",
+      "endConversation": "Terminer la conversation",
+      "savingProgress": "Enregistrement de la progression...",
+      "liveConversation": "Conversation en direct",
+      "transcriptsEmpty": "Démarrez la conversation pour voir les transcriptions...",
+      "you": "Vous",
+      "alice": "Alice",
+      "youSpeaking": "Vous (en train de parler…)",
+      "aliceSpeaking": "Alice (en train de parler…)",
+      "mute": "Couper le son",
+      "unmute": "Activer le son",
+      "executiveDialogTitle": "Voulez-vous vraiment être mis en relation avec un conseiller clientèle ?",
+      "connecting": "Connexion en cours...",
+      "mobile": {
+        "connected": "Connecté",
+        "notConnected": "Non connecté",
+        "listeningPrompt": "Je vous écoute. Parlez-moi de vos projets récents.",
+        "viewVideo": "Vue vidéo",
+        "viewChat": "Vue conversation",
+        "viewMode": "Basculer entre vidéo et conversation"
+      }
+    },
+    "milestone": {
+      "progress": "Progression",
+      "labels": {
+        "onboarding": "À propos de vous",
+        "way_of_working": "Méthode de travail",
+        "self_awareness": "Conscience de soi",
+        "working_with_others": "Travail en équipe",
+        "new_situations": "Nouvelles situations",
+        "motivation": "Motivation",
+        "mindset": "État d'esprit",
+        "hobbies": "Loisirs",
+        "preferences": "Préférences",
+        "education": "Formation",
+        "feedback": "Commentaires"
+      }
+    }
+  },
+  "comingSoon": {
+    "title": "Les bonnes choses prennent un peu de temps !",
+    "subtitle": "Votre évaluation est en cours de préparation.",
+    "description": "Nous vous enverrons un e-mail dès qu'elle sera prête."
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "backHome": "Retour à l'accueil",
+    "goDashboard": "Aller au tableau de bord"
+  },
+  "landing": {
+    "nav": {
+      "about": "À propos",
+      "whyUs": "Pourquoi nous",
+      "features": "Nos fonctionnalités",
+      "survey": "Sondage",
+      "testimonials": "Témoignages",
+      "contact": "Contacts",
+      "login": "CONNEXION"
+    },
+    "hero": {
+      "line1": "Transformez vos vagues",
+      "careerGoals": "objectifs de carrière",
+      "line2": "en ambitions concrètes",
+      "tagline": "AVEC UN ACCOMPAGNEMENT ET UN MENTORAT PERSONNALISÉS",
+      "description1": "NuMee vous aide à comprendre où vous en êtes, où vous pourriez être à l'avenir, et vous guide vers vos ambitions.",
+      "description2": "Votre mentor personnel propulsé par l'IA (YPM) compare vos compétences à de vrais profils de poste, identifie les écarts et crée des feuilles de route personnalisées — pour avancer en toute confiance.",
+      "cta": "Essayer Numee maintenant"
+    },
+    "empower": {
+      "title": "NuMee est là pour soutenir chaque parcours professionnel avec des feuilles de route personnalisées",
+      "paragraph1": "Nous pensons que chaque professionnel mérite un chemin clair entre là où il se trouve et là où il veut aller. Notre plateforme utilise l'IA pour cartographier vos compétences, identifier les écarts et créer des étapes concrètes.",
+      "paragraph2": "Des évaluations au mentorat et au réseautage, NuMee vous accompagne à chaque étape afin que vous puissiez avancer en toute confiance.",
+      "cta": "Voir les fonctionnalités"
+    },
+    "footer": {
+      "tagline": "Accompagnement de carrière propulsé par l'IA. Feuilles de route personnalisées, évaluations de compétences et mentorat pour chaque ambition.",
+      "company": "Entreprise",
+      "product": "Produit",
+      "resources": "Ressources",
+      "newsletterTitle": "Restez informé",
+      "newsletterSubtitle": "Recevez des conseils de carrière et des actualités produit.",
+      "emailPlaceholder": "Votre e-mail",
+      "subscribe": "S'abonner",
+      "copyright": "© {year} NuMee. Tous droits réservés."
+    },
+    "footerLinks": {
+      "aboutUs": "À propos",
+      "careers": "Carrières",
+      "press": "Presse",
+      "partners": "Partenaires",
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "howItWorks": "Comment ça marche",
+      "testimonials": "Témoignages",
+      "blog": "Blog",
+      "faq": "FAQ",
+      "support": "Support",
+      "privacyPolicy": "Politique de confidentialité"
+    }
+  }
+}

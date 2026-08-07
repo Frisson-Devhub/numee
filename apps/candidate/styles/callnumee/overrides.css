@@ -1,0 +1,485 @@
+/* Tailwind v4 generates `.collapse { visibility: collapse }` when it scans `class="collapse"`.
+   That conflicts with Bootstrap collapse/nav — use scoped overrides instead. */
+
+.wrapper .navbar-collapse.collapse:not(.show) {
+  display: none !important;
+}
+
+.wrapper .navbar-collapse.collapse.show {
+  visibility: visible !important;
+}
+
+@media (min-width: 992px) {
+  .wrapper .header nav.navbar {
+    justify-content: center;
+  }
+
+  .wrapper .header .container-fluid {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    max-width: 90%;
+    margin: 0 auto;
+    padding: 0;
+    gap: 32px;
+  }
+
+  .wrapper .header .navbar-brand {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .wrapper .header .navbar-brand img {
+    height: 50px !important;
+    width: auto !important;
+    max-width: none !important;
+    flex-shrink: 0;
+  }
+
+  .wrapper .header.active .navbar-brand img {
+    height: 40px !important;
+  }
+
+  .wrapper .navbar-expand-lg .navbar-collapse {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    flex-grow: 0 !important;
+    align-items: center;
+    justify-content: flex-end;
+    visibility: visible !important;
+    margin-left: 0 !important;
+  }
+
+  .wrapper .navbar-expand-lg .navbar-toggler,
+  .wrapper .landing-mobile-nav {
+    display: none !important;
+  }
+
+  .wrapper #navbarNav {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0;
+    width: auto;
+  }
+
+  .wrapper .navbar-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    margin: 0 !important;
+    padding: 0;
+    width: auto;
+  }
+
+  .wrapper .navbar-nav .nav-link {
+    white-space: nowrap;
+    font-size: 15px !important;
+  }
+
+  .wrapper #navbarNav .landing-login-btn {
+    display: inline-flex !important;
+    margin-left: 24px;
+    padding: 0 25px !important;
+    line-height: 50px !important;
+    min-height: 50px;
+    flex-shrink: 0;
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .wrapper .header nav.navbar {
+    position: relative;
+    height: 66px !important;
+    min-height: 66px;
+    padding: 0;
+    background: rgba(44, 92, 167, 0.95) !important;
+  }
+
+  .wrapper .header.active nav.navbar {
+    height: 66px !important;
+    background: #2c5ca7 !important;
+  }
+
+  .wrapper .header .container-fluid {
+    display: flex;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 95%;
+    height: 66px;
+    margin: 0 auto;
+    padding: 0;
+    gap: 12px;
+  }
+
+  .wrapper .header .navbar-brand {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    max-width: 50%;
+  }
+
+  .wrapper .header .navbar-brand img {
+    height: 32px !important;
+    width: auto !important;
+    max-width: none !important;
+    display: block;
+  }
+
+  .wrapper .header.active .navbar-brand img {
+    height: 32px !important;
+  }
+
+  /* Keep collapsed menu out of the header row */
+  .wrapper #navbarNav.navbar-collapse {
+    flex-basis: auto !important;
+    flex-grow: 0 !important;
+    width: auto !important;
+  }
+
+  .wrapper #navbarNav.collapse:not(.show) {
+    display: none !important;
+  }
+
+  .wrapper .landing-mobile-nav {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .wrapper .landing-mobile-nav .btn.btn-primary {
+    padding: 0 18px !important;
+    line-height: 40px !important;
+    min-height: 40px;
+    font-size: 13px !important;
+    white-space: nowrap;
+  }
+
+  .wrapper #navbarNav.collapse.show,
+  .wrapper #navbarNav.collapsing {
+    display: block !important;
+    position: absolute;
+    top: 66px;
+    left: 0;
+    width: 100% !important;
+    flex-basis: 100% !important;
+    padding: 30px;
+    background: #2c5ca7;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 30px 30px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+
+  .wrapper #navbarNav .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    width: 100%;
+  }
+
+  .wrapper .landing-mobile-nav .btn.btn-primary,
+  .wrapper #navbarNav .landing-login-btn {
+    background: linear-gradient(to right, #2d6cd5, #f17e26) !important;
+    border: 0 !important;
+    border-radius: 60px !important;
+    font-weight: 500;
+    font-family: var(--poppins, "Poppins", sans-serif);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #fff !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    text-decoration: none;
+    box-shadow: none !important;
+  }
+
+  .wrapper .landing-mobile-nav .btn.btn-primary:hover,
+  .wrapper .landing-mobile-nav .btn.btn-primary:focus,
+  .wrapper .landing-mobile-nav .btn.btn-primary:active,
+  .wrapper #navbarNav .landing-login-btn:hover,
+  .wrapper #navbarNav .landing-login-btn:focus,
+  .wrapper #navbarNav .landing-login-btn:active {
+    background: linear-gradient(to right, #2d6cd5, #f17e26) !important;
+    color: #fff !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .wrapper #navbarNav .landing-login-btn {
+    margin-top: 8px;
+    padding: 0 24px !important;
+    line-height: 45px !important;
+    min-height: 45px;
+    font-size: 15px;
+  }
+
+  .wrapper .landing-mobile-nav .navbar-toggler {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #fff !important;
+    border-radius: 12px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    flex-shrink: 0;
+  }
+
+  .wrapper .landing-mobile-nav .navbar-toggler svg {
+    width: 20px;
+    height: 20px;
+    color: #fff;
+  }
+
+  .wrapper .heropanel--video {
+    padding-top: 66px;
+  }
+}
+
+.wrapper #navbarNav {
+  gap: 0;
+}
+
+.wrapper .navbar-collapse.collapsing {
+  visibility: visible !important;
+}
+
+.wrapper .accordion-collapse.collapse:not(.show) {
+  display: none !important;
+}
+
+.wrapper .accordion-collapse.collapse.show {
+  display: block;
+  visibility: visible !important;
+}
+
+.wrapper .tab-pane.fade:not(.show) {
+  display: none;
+}
+
+.wrapper .tab-pane.fade.show {
+  display: block;
+  visibility: visible !important;
+}
+
+/* Keep landing typography from global dark-mode body styles */
+.wrapper {
+  background: #fff;
+  color: #000;
+}
+
+/* Header — match callnumee.com (+ login button) */
+.wrapper .header nav.navbar {
+  height: 100px;
+  background: rgba(44, 92, 167, 0.8);
+}
+
+.wrapper .header.active nav.navbar {
+  height: 70px;
+  background: #2c5ca7 !important;
+  box-shadow: 0 3px 20px rgba(0, 0, 0, 0.2);
+}
+
+.wrapper .header .container-fluid {
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+.wrapper .header .navbar-brand img {
+  height: 50px;
+  width: auto;
+  max-width: none;
+  flex-shrink: 0;
+  transition: height 0.4s ease-in-out;
+}
+
+.wrapper .header.active .navbar-brand img {
+  height: 40px;
+}
+
+.wrapper .header .navbar-light .navbar-nav .nav-link,
+.wrapper .navbar-nav .nav-link,
+.wrapper .navbar-nav .nav-link:hover,
+.wrapper .navbar-nav .nav-link:focus {
+  color: #fff !important;
+  font-weight: 500;
+  font-size: 16px;
+  letter-spacing: 0.2px;
+  padding: 0 !important;
+}
+
+.wrapper .navbar-nav .nav-link.active,
+.wrapper .navbar-nav .nav-link.active:hover,
+.wrapper .navbar-nav .nav-link.active:focus,
+.wrapper .header .navbar-light .navbar-nav .nav-link.active,
+.wrapper .header .navbar-light .navbar-nav .nav-link.active:hover,
+.wrapper .header .navbar-light .navbar-nav .nav-link.active:focus,
+.wrapper .header .navbar-nav li a.active {
+  color: #000 !important;
+}
+
+.wrapper .header .btn.btn-primary,
+.wrapper #navbarNav .landing-login-btn {
+  background: linear-gradient(to right, #2d6cd5, #f17e26) !important;
+  border: 0 !important;
+  border-radius: 60px !important;
+  font-weight: 500 !important;
+  font-size: 16px !important;
+  font-family: var(--poppins, "Poppins", sans-serif) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.wrapper .header .btn.btn-primary:hover,
+.wrapper .header .btn.btn-primary:focus,
+.wrapper .header .btn.btn-primary:active,
+.wrapper #navbarNav .landing-login-btn:hover,
+.wrapper #navbarNav .landing-login-btn:focus,
+.wrapper #navbarNav .landing-login-btn:active {
+  background: linear-gradient(to right, #2d6cd5, #f17e26) !important;
+  color: #fff !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Font Awesome CSS not loaded — ensure mobile menu icon is visible */
+.wrapper .header .navbar-toggler {
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wrapper .header .navbar-toggler:focus,
+.wrapper .header .navbar-toggler:hover,
+.wrapper .header .navbar-toggler:active {
+  color: #fff !important;
+  border-color: #fff !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+.wrapper .header .navbar-toggler svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  color: #fff;
+  fill: currentColor;
+}
+
+/* Footer newsletter — restore input/button layout (Tailwind preflight strips input bg) */
+.wrapper .newsletter .form-group {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+}
+
+.wrapper .newsletter .form-group input {
+  display: block;
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  border-radius: 10px 50px 50px 10px;
+  padding: 0 56px 0 15px;
+  font-size: 14px;
+  font-family: var(--poppins, "Poppins", sans-serif);
+  color: #000 !important;
+  background: #fff !important;
+  border: 0 !important;
+  outline: none;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.wrapper .newsletter .form-group input::placeholder {
+  color: #666;
+  opacity: 1;
+}
+
+.wrapper .newsletter .form-group input:focus {
+  background: #fff !important;
+  border: 0 !important;
+  outline: none;
+  box-shadow: none;
+}
+
+.wrapper .newsletter .form-group button.btn-primary {
+  width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: linear-gradient(to right, #2d6cd5, #f17e26) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.wrapper .newsletter .form-group button.btn-primary svg {
+  width: 18px !important;
+  height: 18px !important;
+  color: #fff;
+}
+
+/* Hero tagline pill — match callnumee.com */
+.wrapper .heropanel__content .heading p.sub-title {
+  display: inline-block !important;
+  width: fit-content !important;
+  max-width: 100%;
+  background: linear-gradient(to right, #2d6cd5, #f17e26) !important;
+  color: #fff !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.65px;
+  text-transform: none !important;
+  padding: 8px 24px !important;
+  border-radius: 50px !important;
+  line-height: 1.45 !important;
+  margin: 20px 0 !important;
+  text-align: left;
+}
+
+@media (max-width: 767.98px) {
+  .wrapper .heropanel__content .heading p.sub-title {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    padding: 8px 18px !important;
+    letter-spacing: 0.3px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .wrapper .heropanel__content .heading p.sub-title {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    padding: 7px 16px !important;
+  }
+}

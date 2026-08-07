@@ -1,0 +1,173 @@
+@media only screen and (max-width:1699px){
+	.heropanel__content .heading h2{font-size:40px;}
+}
+
+@media only screen and (max-width:1599px){
+	.heropanel__content .heading h2{font-size: 38px;}
+}
+
+@media only screen and (max-width:1499px){
+	.container{max-width:1350px;}
+	.heropanel__content .heading h2{font-size: 34px; line-height: 36px; margin-bottom:5px;}
+}
+
+@media only screen and (max-width:1399px){
+	.container{max-width:1250px;}
+	.client-reviews .container{max-width:1000px;}
+	.features .container{position:relative;}
+	.features .heading h2 br{display:none;}
+	.features .heading h2{font-size:32px;}
+	.features .text-area p.sub-title{width:95%;}
+	.heropanel__content .heading h2{font-size:30px; line-height:22px;}
+	.heropanel__content .heading p.sub-title {font-size:16px; margin: 20px 0px;}
+	.heropanel__content .text-area p{font-size:18px; line-height:26px;}
+}
+
+@media only screen and (max-width:1299px){
+	.container{max-width:1140px;}
+	.navbar-nav{gap:24px;}
+	.navbar-brand img{height:40px;}
+	#navbarNav{gap:20px;}
+	.help-points{display:none !important;}
+	.w-full{display:flex !important;}
+	.ambition-icon{width:35%;}
+	.process .container{top:60px;}
+	.process .heading h2{font-size:28px; line-height:40px;}
+	.clarity-call-section .heading h2 { font-size: 32px; line-height: normal; margin: 0px; }
+	.clarity_text .sub-title{    font-size: 22px;}
+	.heropanel__content{max-width: 89%;}
+}
+
+@media only screen and (max-width:1199px){
+	.container{max-width:940px;}
+	.client-reviews .container{max-width:800px;}
+	.review-text p{font-size:16px; line-height:30px; padding-right:0px;}
+	.review-text:before{top:0; left:0; width:40px; height:40px;}
+	.client-reviews .carousel-control-next img, .client-reviews .carousel-control-prev img{height:40px;}
+	.survey .text-area p{font-size:18px; line-height:28px;}
+	.survey .text-area h4{font-size:32px; line-height:normal;}
+	.logo-presentation{}
+	.logo-presentation img{height:35px;}
+	#navbarNav{gap:24px;}
+	.btn-primary{font-size:15px;}
+	.navbar-nav li a{font-size:14px;}
+	.heading h2{font-size:34px; line-height:42px;}
+	p{font-size:16px; line-height:24px;}
+	.abt-img .img1{width:85%;}
+	.abt-img .img2{width:40%; left:0; top:auto; bottom:2%;}
+	.ambition-item{flex-direction:column;}
+	.ambition-item:hover{border-color:#205EC5;}
+	.ambition-text{position:relative;}
+	.ambition-img, .ambition-icon, .ambition-text{width:100%;}
+	.ambition-img img{width:100%;}
+	.ambition-item:hover{background:#fff;}
+	.ambition-item:hover .ambition-img{width:100%;}
+	.ambition-item:hover .ambition-icon{margin-left:0px;}
+	.ambition-item{width:48%; border:1px solid #ccc; border-radius:16px; padding:20px}
+	.ambition-points{gap:20px;}
+	.ambition-icon .icon{width:50px; height:50px;}
+	.ambition-icon .icon img{height:25px;}
+	.heropanel__content .row > div:first-child{height:fit-content !important;}
+	.heropanel__content .row{height:auto; padding-top:100px;}
+	.ai-anime {width:34%; float:right; bottom:-17px;}
+	.feature-tabs .nav-tabs li button.active{font-size:18px;}
+	.process .container {top:45px;}
+	.process .container .heading {max-width:45%;}
+	.process .container .heading h2{line-height:35px;}
+	.heropanel__content{padding: 0px 0px 100px 0px;}
+	.hero_robot{padding-top: 50px; max-width: 75%; float:right;}
+	.professionimg > img{width: 90px; height: 90px;}
+	.heropanel__content .row{padding-top:30px;}
+	.mem_name {    padding: 24px 16px 24px 20px;}
+}
+
+@media only screen and (max-width:991px){
+	.container{max-width:740px;}
+	.client-img{margin:0 auto;}
+	.client-reviews .container {max-width:70%;}
+	.review-text:before{display:none;}
+	.review-text p{text-align:center; line-height:28px;}
+	.client-details{text-align:center;}
+	.f-shrt-info p{font-size:14px; line-height:24px;}
+	.logo-presentation{position:relative; margin-bottom:30px;}
+	.why-us .nav-tabs li.nav-item button, .why-us .nav-tabs li.nav-item button.active{font-size:16px;}
+	.header .container-fluid{max-width:95%;}
+	nav.navbar {height:66px; background:#000;}
+	.header .navbar-toggler:focus{outline:none; box-shadow:none; border-color:#205EC5; color:#205EC5;}
+	.header.active nav.navbar{height:66px;}
+	div#navbarNav {	 padding:30px;	 position:absolute;	 top:66px;	 left:0;	 background:#2C5CA7;	 width:100%;	 border-top:1px solid rgba(255, 255, 255, 0.1);	box-shadow: 0px 30px 30px rgba(0, 0, 0, 0.2);}
+	.abt-img{text-align:center;}
+	.abt-img .img1{position:relative; width:45%; float:none; margin:0 auto; right:-7%;}
+	.abt-img .img2 {width:35%; left:14%; top:auto; bottom:10%;}
+	.ambition-icon h4{width:100%;}
+	.ambition-icon .icon {margin-top:-56px; position:relative; left:18px;}
+	.ai-anime {width:54%; float:right; bottom:27px;}
+	.process .container .heading h2{line-height:30px; font-size:24px;}
+    .heropanel--video{padding-top:66px;}
+    .header button{line-height:45px; padding: 0px 24px;}
+}
+
+@media only screen and (max-width:767px){
+	.container{max-width:95%;}
+	.f-shrt-info{padding-bottom:0px !important;}
+	.f-link h4{margin-bottom:10px !important;}
+	.help-points, .help-points.w-full{gap:30px;}
+	.help-points li, .help-points.w-full li {font-size:16px; line-height:22px; width:100%;}
+	.f-link ul li a{line-height:26px; font-size:15px;}
+	.newsletter p{font-size:15px;}
+	.client-reviews .container {max-width:90%;}
+	.client-reviews .carousel-control-prev {top:auto; left:40%; bottom:-60px;}
+	.client-reviews .carousel-control-next{top:auto; right:40%; bottom:-60px;}
+	.heading h2{font-size:32px; line-height:45px;}
+	.survey .text-area button{margin:0 auto;}
+	.survey{background-position:left top;}
+	.why-us .nav-tabs li.nav-item button{padding:10px 14px;}
+	.human-img{height:auto; padding:30px;}
+	.human-img img {width:30%;}
+	.navbar-brand img{height:32px;}
+	.abt-img .img2{left:9%; width:40%;}
+	.abt-img .img1{width:53%;}
+	.about-us .heading h2 br{display:none;}
+	.ambition-item{width:100%;}
+	.heropanel__content .heading h2 {font-size:32px; line-height:40px;} 
+	.ai-anime {width:66%; float:right; bottom:0px;}
+	.header.active .navbar-brand img{height:32px;}
+	.featureAccordian .accordion-header button{font-size:16px; line-height:22px;}
+	.process .container{position:relative; top:0;}
+	.process .container .heading h2{line-height:30px; font-size:24px;}
+	.process{padding:100px 0px;}
+	.process .container .heading{max-width:100%;}
+	.navbar-nav li a{display:inline;}
+	.hero_robot{max-width: 100%; justify-content: space-between;}
+	.professionimg > img {        width: 75px;        height: 75px;    }
+	.heropanel__content {        max-width: 100%;        padding:0px 5% 60px;        background-size: cover;        background-position: center top;    }
+	.professionimg > img:nth-child(2), .professionimg > img:nth-child(4){left: 32px;}
+	.professionimg > img:first-child, .professionimg > img:last-child{left: 90px;}
+	.heropanel__content .heading h2{font-size: 28px; line-height: 24px; letter-spacing: 0.5px}
+	.mem_name {    padding: 20px;}
+	.copyright .row {        flex-direction: column-reverse;    }
+}
+
+@media only screen and (max-width:575px){
+	.container{max-width:95%;}
+	.f-shrt-info > a > img{height:35px;}
+	.copyright p{font-size:15px;}
+	.client-reviews .carousel-control-prev {left:35%;}
+	.client-reviews .carousel-control-next{right:35%;}
+	.heading h2 {font-size:28px; line-height:38px;}
+	.heading h2 br{display:none;}
+	.logo-presentation img {height:28px;}
+	.abt-img .img1 {width:100%; right:0;}
+	.abt-img .img2 {left:10px; width:35%; right:auto; margin:auto; top:10px; bottom:auto;}
+	div.sub-title {font-size:18px; line-height:30px;}
+	.heropanel__content .heading h2 {font-size:28px; line-height:38px;}
+	.heropanel__content .heading p.sub-title {font-size:22px; line-height:30px;}
+	.heropanel__content .text-area p {font-size:16px; line-height:24px;}
+	.ai-anime {width:74%; float:right; bottom:0px; margin-top:30px;}
+	.professionimg{gap: 5px}
+	.professionimg > img{        width: 62px;         height: 62px;}
+	.professionimg > img:first-child, .professionimg > img:last-child{left: 70px;}
+	.professionimg > img:nth-child(2), .professionimg > img:nth-child(4){left: 25px;}
+	.heropanel__content .heading h2{line-height: 25px;}
+	.heropanel__content .heading p.sub-title {        font-size: 18px;        line-height: 24px;        text-transform: capitalize;    }
+}

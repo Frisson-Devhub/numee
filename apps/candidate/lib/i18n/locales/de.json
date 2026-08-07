@@ -1,0 +1,227 @@
+{
+  "common": {
+    "language": {
+      "label": "Sprache",
+      "english": "Englisch",
+      "german": "Deutsch",
+      "french": "Französisch"
+    },
+    "loading": "Wird geladen...",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "courses": "Kurse",
+    "jobs": "Jobs",
+    "profile": "Profil",
+    "signOut": "Abmelden"
+  },
+  "header": {
+    "viewProfile": "Profil anzeigen",
+    "careers": "Karriere"
+  },
+  "auth": {
+    "login": {
+      "title": "Willkommen zurück",
+      "titleMobile": "Willkommen zurück",
+      "subtitle": "Bitte geben Sie Ihre Daten ein, um sich anzumelden.",
+      "subtitleMobile": "Geben Sie Ihre E-Mail oder Telefonnummer und Ihr Passwort ein",
+      "securityTitle": "Sicherheitsupdate",
+      "securityMessage": "Die Zwei-Faktor-Authentifizierung (2FA) ist jetzt für alle Super-Admin-Konten erforderlich.",
+      "email": "Geschäfts-E-Mail",
+      "emailMobile": "E-Mail oder Telefonnummer",
+      "password": "Passwort",
+      "rememberMe": "Angemeldet bleiben",
+      "forgotPassword": "Passwort vergessen?",
+      "forgotPasswordMobile": "Passwort vergessen?",
+      "signIn": "Anmelden",
+      "signInMobile": "Anmelden",
+      "signingIn": "Anmeldung läuft...",
+      "loggingIn": "Anmeldung läuft...",
+      "loginFailed": "Anmeldung fehlgeschlagen",
+      "somethingWrong": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+    }
+  },
+  "dashboard": {
+    "loading": "Wird geladen...",
+    "unauthorized": "Bitte melden Sie sich an.",
+    "loadFailed": "Dashboard konnte nicht geladen werden.",
+    "startAssessment": "Bewertung starten",
+    "assessmentClosed": "Bewertung geschlossen",
+    "assessmentComplete": "Bewertung abgeschlossen",
+    "selectAssessment": "Bewertung auswählen",
+    "competencyReport": {
+      "title": "Kompetenzanalyse-Bericht",
+      "subtitle": "Entdecken Sie Ihre Kernkompetenzen und Entwicklungsmöglichkeiten.",
+      "viewCareerGoal": "Karriereziel anzeigen",
+      "identified": "Identifizierte Kompetenzen"
+    },
+    "personalSummary": {
+      "title": "Persönliche Zusammenfassung",
+      "subtitle": "Ihre Stärken und Entwicklungsbereiche auf einen Blick."
+    },
+    "careerRecommendations": {
+      "title": "KI-Karriereempfehlungen",
+      "subtitle": "Rollen, die zu Ihrem Profil und Ihren Zielen passen."
+    },
+    "motivation": {
+      "title": "Motivationsprofil",
+      "subtitle": "Was Sie in Ihrer Karriere antreibt."
+    },
+    "matchScore": {
+      "title": "Übereinstimmungswert",
+      "subtitle": "Wie gut Sie zu empfohlenen Rollen passen."
+    },
+    "scoreDistribution": {
+      "title": "Score-Verteilung",
+      "subtitle": "Stärkewert vs. Kompetenz"
+    },
+    "motivationReport": {
+      "title": "Motivationsanalyse-Bericht",
+      "subtitle": "Verstehen Sie, was Ihre Handlungen und Entscheidungen antreibt.",
+      "identified": "Identifizierte Motivationen",
+      "strengthScore": "Stärkewert",
+      "occurrenceTitle": "Motivations-Häufigkeitsanalyse",
+      "occurrenceSubtitle": "Häufigkeit vs. Motivation"
+    },
+    "fitBest": {
+      "title": "Wo Sie am besten passen",
+      "subtitle": "Wo Ihre Fähigkeiten die größte Wirkung entfalten",
+      "personalSummary": "Ihre persönliche Zusammenfassung"
+    },
+    "assessmentProgress": "Bewertungsfortschritt"
+  },
+  "assessmentProgressBar": {
+    "progress": "Fortschritt",
+    "ariaLabel": "Bewertungsfortschritt",
+    "continueAssessment": "Bewertung fortsetzen",
+    "startNewAssessment": "Neue Bewertung starten",
+    "milestoneTitleFirst": "Starten Sie Ihre erste Bewertung",
+    "milestoneTitle": "Neue Bewertung bereits gestartet",
+    "milestoneBodyFirst": "Starten Sie Ihre erste Bewertung und schließen Sie mindestens 10 % ab, bevor Sie eine neue beginnen können.",
+    "milestoneBody": "Schließen Sie mindestens einen Meilenstein in Ihrer letzten Bewertung ab, bevor Sie eine neue starten.",
+    "limitTitle": "Bewertungslimit erreicht",
+    "limitBody": "Sie haben das Maximum von {max} Bewertungen erreicht. Schließen Sie bestehende Bewertungen ab oder prüfen Sie sie im Dropdown oben.",
+    "ok": "OK"
+  },
+  "aiQuestionnaire": {
+    "page": {
+      "title": "KI-Fragebogen",
+      "subtitle": "Sprechen Sie mit Alice von Numee — KI-Assistentin mit Avatar. Hilfe bei Ihrem Anmelde-Fragebogen."
+    },
+    "assistant": {
+      "status": {
+        "readyToConnect": "Bereit zur Verbindung",
+        "disconnected": "Getrennt",
+        "connecting": "Verbindung wird hergestellt...",
+        "assessmentClosed": "Diese Bewertung ist geschlossen und kann nicht fortgesetzt werden.",
+        "connected": "Verbunden — Sichere Sitzung hergestellt.",
+        "supportNotified": "Support benachrichtigt — ein Kundenbetreuer wird in Kürze beitreten.",
+        "connectionFailed": "Verbindung fehlgeschlagen",
+        "supportFailed": "Verbindung zum Support fehlgeschlagen"
+      },
+      "avatarPlaceholder": "Klicken Sie auf „Gespräch starten“, um die Bewertung zu beginnen",
+      "avatarConnecting": "Verbindung mit Ihrer Assistentin wird hergestellt…",
+      "startConversation": "Gespräch starten",
+      "endConversation": "Gespräch beenden",
+      "savingProgress": "Fortschritt wird gespeichert...",
+      "liveConversation": "Live-Gespräch",
+      "transcriptsEmpty": "Starten Sie das Gespräch, um Transkripte zu sehen...",
+      "you": "Sie",
+      "alice": "Alice",
+      "youSpeaking": "Sie (sprechen…)",
+      "aliceSpeaking": "Alice (spricht…)",
+      "mute": "Stummschalten",
+      "unmute": "Stummschaltung aufheben",
+      "executiveDialogTitle": "Möchten Sie wirklich mit einem Kundenbetreuer verbunden werden?",
+      "connecting": "Verbindung wird hergestellt...",
+      "mobile": {
+        "connected": "Verbunden",
+        "notConnected": "Nicht verbunden",
+        "listeningPrompt": "Ich höre zu. Erzählen Sie mir von Ihren letzten Projekten.",
+        "viewVideo": "Video-Ansicht",
+        "viewChat": "Chat-Ansicht",
+        "viewMode": "Zwischen Video und Chat wechseln"
+      }
+    },
+    "milestone": {
+      "progress": "Fortschritt",
+      "labels": {
+        "onboarding": "Über Sie",
+        "way_of_working": "Arbeitsweise",
+        "self_awareness": "Selbstwahrnehmung",
+        "working_with_others": "Zusammenarbeit",
+        "new_situations": "Neue Situationen",
+        "motivation": "Motivation",
+        "mindset": "Denkweise",
+        "hobbies": "Hobbys",
+        "preferences": "Präferenzen",
+        "education": "Bildung",
+        "feedback": "Feedback"
+      }
+    }
+  },
+  "comingSoon": {
+    "title": "Gute Dinge brauchen etwas Zeit!",
+    "subtitle": "Ihre Bewertung wird vorbereitet.",
+    "description": "Wir senden Ihnen eine E-Mail, sobald sie bereit ist."
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "backHome": "Zur Startseite",
+    "goDashboard": "Zum Dashboard"
+  },
+  "landing": {
+    "nav": {
+      "about": "Über uns",
+      "whyUs": "Warum wir",
+      "features": "Unsere Funktionen",
+      "survey": "Umfrage",
+      "testimonials": "Referenzen",
+      "contact": "Kontakt",
+      "login": "ANMELDEN"
+    },
+    "hero": {
+      "line1": "Verwandeln Sie Ihre vagen",
+      "careerGoals": "Karriereziele",
+      "line2": "in konkrete Ambitionen",
+      "tagline": "MIT PERSONALISIERTER BERATUNG UND MENTORSHIP",
+      "description1": "NuMee hilft Ihnen zu verstehen, wo Sie stehen, wo Sie in Zukunft sein könnten, und leitet Sie zu Ihren Zielen.",
+      "description2": "Ihr KI-gestützter persönlicher Mentor (YPM) ordnet Ihre Fähigkeiten realen Jobprofilen zu, findet Lücken und erstellt personalisierte Roadmaps — damit Sie selbstbewusst vorankommen.",
+      "cta": "Numee jetzt testen"
+    },
+    "empower": {
+      "title": "NuMee stärkt jede Karriere mit personalisierten Roadmaps",
+      "paragraph1": "Wir glauben, dass jeder Profi einen klaren Weg verdient — von heute zu den eigenen Zielen. Unsere Plattform nutzt KI, um Fähigkeiten zu erfassen, Lücken zu identifizieren und umsetzbare Schritte zu definieren.",
+      "paragraph2": "Von Bewertungen über Mentoring bis Networking — NuMee begleitet Sie in jeder Phase.",
+      "cta": "Funktionen ansehen"
+    },
+    "footer": {
+      "tagline": "KI-gestützte Karriereberatung. Personalisierte Roadmaps, Kompetenzbewertungen und Mentoring für jedes Ziel.",
+      "company": "Unternehmen",
+      "product": "Produkt",
+      "resources": "Ressourcen",
+      "newsletterTitle": "Bleiben Sie informiert",
+      "newsletterSubtitle": "Karrieretipps und Produkt-Updates erhalten.",
+      "emailPlaceholder": "Ihre E-Mail",
+      "subscribe": "Abonnieren",
+      "copyright": "© {year} NuMee. Alle Rechte vorbehalten."
+    },
+    "footerLinks": {
+      "aboutUs": "Über uns",
+      "careers": "Karriere",
+      "press": "Presse",
+      "partners": "Partner",
+      "features": "Funktionen",
+      "pricing": "Preise",
+      "howItWorks": "So funktioniert's",
+      "testimonials": "Referenzen",
+      "blog": "Blog",
+      "faq": "FAQ",
+      "support": "Support",
+      "privacyPolicy": "Datenschutz"
+    }
+  }
+}

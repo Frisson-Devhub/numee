@@ -1,0 +1,227 @@
+{
+  "common": {
+    "language": {
+      "label": "Language",
+      "english": "English",
+      "german": "German",
+      "french": "French"
+    },
+    "loading": "Loading...",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "courses": "Courses",
+    "jobs": "Jobs",
+    "profile": "Profile",
+    "signOut": "Sign Out"
+  },
+  "header": {
+    "viewProfile": "View profile",
+    "careers": "Careers"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "titleMobile": "Welcome Back",
+      "subtitle": "Please enter your details to sign in.",
+      "subtitleMobile": "Enter your email or phone and password to Log In",
+      "securityTitle": "Security Update",
+      "securityMessage": "Two-factor authentication (2FA) is now required for all Super Admin accounts.",
+      "email": "Work Email",
+      "emailMobile": "Email or phone number",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forget your password?",
+      "forgotPasswordMobile": "Forgot Password?",
+      "signIn": "Sign In",
+      "signInMobile": "Log In",
+      "signingIn": "Signing In...",
+      "loggingIn": "Logging in...",
+      "loginFailed": "Login failed",
+      "somethingWrong": "Something went wrong. Please try again."
+    }
+  },
+  "dashboard": {
+    "loading": "Loading. . .",
+    "unauthorized": "Please sign in.",
+    "loadFailed": "Failed to load dashboard.",
+    "startAssessment": "Start Assessment",
+    "assessmentClosed": "Assessment closed",
+    "assessmentComplete": "Assessment Complete",
+    "selectAssessment": "Select assessment",
+    "competencyReport": {
+      "title": "Competency Analysis Report",
+      "subtitle": "Discover your core competencies and growth opportunities.",
+      "viewCareerGoal": "View Career Goal",
+      "identified": "Competencies identified"
+    },
+    "personalSummary": {
+      "title": "Personal Summary",
+      "subtitle": "Your strengths and growth areas at a glance."
+    },
+    "careerRecommendations": {
+      "title": "AI Career Recommendations",
+      "subtitle": "Roles aligned with your profile and aspirations."
+    },
+    "motivation": {
+      "title": "Motivation Profile",
+      "subtitle": "What drives you in your career journey."
+    },
+    "matchScore": {
+      "title": "Match Score",
+      "subtitle": "How well you align with recommended roles."
+    },
+    "scoreDistribution": {
+      "title": "Score Distribution",
+      "subtitle": "Strength Score Vs Competency"
+    },
+    "motivationReport": {
+      "title": "Motivation Analysis Report",
+      "subtitle": "Understand what drives your actions and choices.",
+      "identified": "Motivations Identified",
+      "strengthScore": "Strength Score",
+      "occurrenceTitle": "Motivation Occurrence Analysis",
+      "occurrenceSubtitle": "Occurrence Vs Motivation"
+    },
+    "fitBest": {
+      "title": "Where You Fit Best",
+      "subtitle": "Where your abilities create the most impact",
+      "personalSummary": "Your Personal Summary"
+    },
+    "assessmentProgress": "Assessment progress"
+  },
+  "assessmentProgressBar": {
+    "progress": "Progress",
+    "ariaLabel": "Assessment progress",
+    "continueAssessment": "Continue assessment",
+    "startNewAssessment": "Start new assessment",
+    "milestoneTitleFirst": "Start Your First Assessment",
+    "milestoneTitle": "Already started a new assessment",
+    "milestoneBodyFirst": "Start your first assessment and complete at least 10% before you can begin a new one.",
+    "milestoneBody": "Complete at least one milestone in your latest assessment before starting a new one.",
+    "limitTitle": "Assessment limit reached",
+    "limitBody": "You have reached the maximum of {max} assessments. Complete or review your existing assessments from the dropdown above.",
+    "ok": "OK"
+  },
+  "aiQuestionnaire": {
+    "page": {
+      "title": "AI Questionnaire",
+      "subtitle": "Talk to Alice from Numee — AI assistant with avatar. Get help with your signup questionnaire."
+    },
+    "assistant": {
+      "status": {
+        "readyToConnect": "Ready to connect",
+        "disconnected": "Disconnected",
+        "connecting": "Connecting...",
+        "assessmentClosed": "This assessment is closed and cannot be resumed.",
+        "connected": "Connected — Secure session established.",
+        "supportNotified": "Support notified — a customer executive will join shortly.",
+        "connectionFailed": "Connection failed",
+        "supportFailed": "Failed to connect to support"
+      },
+      "avatarPlaceholder": "Click on Start Conversation to start the assessment",
+      "avatarConnecting": "Connecting to your assistant…",
+      "startConversation": "Start Conversation",
+      "endConversation": "End conversation",
+      "savingProgress": "Saving progress...",
+      "liveConversation": "Live Conversation",
+      "transcriptsEmpty": "Start the conversation to see transcripts...",
+      "you": "You",
+      "alice": "Alice",
+      "youSpeaking": "You (speaking…)",
+      "aliceSpeaking": "Alice (speaking…)",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "executiveDialogTitle": "Do you really want to connect to a customer executive?",
+      "connecting": "Connecting...",
+      "mobile": {
+        "connected": "Connected",
+        "notConnected": "Not connected",
+        "listeningPrompt": "I'm listening. Tell me about your recent projects.",
+        "viewVideo": "Video view",
+        "viewChat": "Chat view",
+        "viewMode": "Switch between video and chat"
+      }
+    },
+    "milestone": {
+      "progress": "Progress",
+      "labels": {
+        "onboarding": "About You",
+        "way_of_working": "Way of Working",
+        "self_awareness": "Self Awareness",
+        "working_with_others": "Working With Others",
+        "new_situations": "New Situations",
+        "motivation": "Motivation",
+        "mindset": "Mindset",
+        "hobbies": "Hobbies",
+        "preferences": "Preferences",
+        "education": "Education",
+        "feedback": "Feedback"
+      }
+    }
+  },
+  "comingSoon": {
+    "title": "Good things take a little time!",
+    "subtitle": "Your assessment is being prepared.",
+    "description": "We'll send you an email the moment it's ready."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to home",
+    "goDashboard": "Go to dashboard"
+  },
+  "landing": {
+    "nav": {
+      "about": "About Us",
+      "whyUs": "Why Us",
+      "features": "Our Features",
+      "survey": "Survey",
+      "testimonials": "Testimonials",
+      "contact": "Contact Us",
+      "login": "LOGIN"
+    },
+    "hero": {
+      "line1": "Turn Your Fuzzy",
+      "careerGoals": "Career Goals",
+      "line2": "Into Specific Ambitions",
+      "tagline": "With personalized Guidance and Mentorship",
+      "description1": "NuMee helps you understand where you are, where you could be in the future, and will guide toward your ambitions.",
+      "description2": "Your AI-powered personal mentor (YPM) maps your skills against real job profile, finds the gaps, and builds a personalized roadmaps - so you can move forward with confidence.",
+      "cta": "Try Numee Now"
+    },
+    "empower": {
+      "title": "NuMee is here to empower every career journey with personalized roadmaps",
+      "paragraph1": "We believe every professional deserves a clear path from where they are to where they want to be. Our platform uses AI to map your skills, identify gaps, and create actionable steps.",
+      "paragraph2": "From assessments to mentorship and networking, NuMee supports you at every stage so you can move forward with confidence.",
+      "cta": "View Features"
+    },
+    "footer": {
+      "tagline": "AI-powered career guidance. Personalized roadmaps, skill assessments, and mentorship for every ambition.",
+      "company": "Company",
+      "product": "Product",
+      "resources": "Resources",
+      "newsletterTitle": "Stay in the loop",
+      "newsletterSubtitle": "Get career tips and product updates.",
+      "emailPlaceholder": "Your email",
+      "subscribe": "Subscribe",
+      "copyright": "© {year} NuMee. All rights reserved."
+    },
+    "footerLinks": {
+      "aboutUs": "About Us",
+      "careers": "Careers",
+      "press": "Press",
+      "partners": "Partners",
+      "features": "Features",
+      "pricing": "Pricing",
+      "howItWorks": "How it Works",
+      "testimonials": "Testimonials",
+      "blog": "Blog",
+      "faq": "FAQ",
+      "support": "Support",
+      "privacyPolicy": "Privacy Policy"
+    }
+  }
+}
