@@ -1,0 +1,12 @@
+---
+description: Shared package boundaries and exports
+globs: packages/shared/**
+alwaysApply: false
+---
+
+# Shared package (`packages/shared`)
+
+- Stay **framework-agnostic**: no Nest or Next imports
+- Export UI components, pure utils, constants, and types only
+- No secrets, env with credentials, or server-only DB/Prisma code
+- Consumers: `@numee/candidate`, `@numee/recruiter`, `@numee/admin` (and others via `@numee/shared`)

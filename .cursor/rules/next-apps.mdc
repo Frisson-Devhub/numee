@@ -1,0 +1,18 @@
+---
+description: Next.js App Router apps (candidate + recruiter)
+globs: apps/candidate/**, apps/recruiter/**
+alwaysApply: false
+---
+
+# Next.js apps (`candidate`, `recruiter`)
+
+- Use the **App Router** (`app/`)
+- Do **not** add new Route Handlers for business API — call Nest instead
+- Use `@numee/shared` `ApiCall` (or shared HTTP helpers) for API requests
+- In dev, **proxy `/api` → Nest** (`localhost:3001`) via `next.config` rewrites so cookies stay same-origin
+- Leave `NEXT_PUBLIC_API_URL` empty when using the proxy; set it only for explicit cross-origin
+
+## Recruiter (`apps/recruiter`)
+
+- UI must use `@numee/shared` components and `@numee/shared/styles/tokens.css` — no ad-hoc hex colors/fonts in new UI (use CSS variables / token theme classes)
+- Recruiter business APIs live under `/api/recruiter/*` on Nest; do not add Next Route Handlers for them

@@ -1,0 +1,14 @@
+---
+description: NestJS API modules, Prisma, and auth conventions
+globs: apps/api/**
+alwaysApply: false
+---
+
+# NestJS API (`apps/api`)
+
+- Organize features as Nest modules (controllers, services, DTOs)
+- Validate inputs with DTOs / class-validator (or project equivalent)
+- **Prisma only here** — schema, client, and migrations stay in `apps/api`
+- Auth: cookie + JWT session pattern; issue/verify sessions in the API
+- Protect admin routes: `ADMIN` guards on `/api/admin/*`
+- Frontends call this API; do not put business API logic in Next Route Handlers

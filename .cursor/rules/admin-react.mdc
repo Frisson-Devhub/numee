@@ -1,0 +1,13 @@
+---
+description: Vite admin app conventions
+globs: apps/admin/**
+alwaysApply: false
+---
+
+# Admin app (`apps/admin`)
+
+- Stack: **Vite + React Router + Tailwind v4**
+- Call Nest via `@numee/shared` `ApiCall` (or shared HTTP helpers)
+- Proxy `/api` to Nest in `vite.config` for same-origin cookies in dev
+- Leave `VITE_API_URL` empty when using the Vite proxy
+- Do not embed Prisma or Nest server code in this app
