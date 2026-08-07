@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@import "@numee/shared/styles/tokens.css";
+
+/* Scan shared UI so AuthShell / shared component utilities are generated */
+@source "../../../packages/shared/src";
+
+:root {
+  /* App chrome background; foreground tokens come from shared tokens.css */
+  --background: var(--surface-muted);
+}
+
+@theme inline {
+  --color-background: var(--background);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  min-height: 100dvh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* TipTap / rich job description content */
+.tiptap p.is-editor-empty:first-child::before,
+.tiptap p.is-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--foreground-subtle);
+}
+
+.rich-text-content h2 {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.rich-text-content h3 {
+  margin: 0.65rem 0 0.3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.rich-text-content p {
+  margin: 0.4rem 0;
+  line-height: 1.55;
+}
+
+.rich-text-content ul,
+.rich-text-content ol {
+  margin: 0.4rem 0;
+  padding-left: 1.25rem;
+}
+
+.rich-text-content ul {
+  list-style: disc;
+}
+
+.rich-text-content ol {
+  list-style: decimal;
+}
+
+.rich-text-content a {
+  text-decoration: underline;
+}
+
+.rich-text-content strong {
+  font-weight: 600;
+}
