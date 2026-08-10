@@ -4,6 +4,7 @@ import { AuthShell } from "@numee/shared/components";
 
 const AUTH_PANEL_BG = "/auth-panel-bg.png";
 const NUMEE_LOGO = "/numee-logo.png";
+const NUMEE_LOGO_ON_LIGHT = "/numee-logo-dark.png";
 
 /** Candidate auth chrome: shared `AuthShell` with local logo / panel assets. */
 export function AuthLayout({
@@ -11,7 +12,7 @@ export function AuthLayout({
   rightPanelOverflow,
   maxWidth = "max-w-md",
   hideSidebar = false,
-  background = "bg-white",
+  background = "bg-surface-muted",
   fillViewport = false,
 }: {
   children: React.ReactNode;
@@ -24,7 +25,9 @@ export function AuthLayout({
 }) {
   return (
     <AuthShell
+      portal="candidate"
       logoSrc={NUMEE_LOGO}
+      logoOnLightSrc={NUMEE_LOGO_ON_LIGHT}
       bgSrc={AUTH_PANEL_BG}
       logoHref="/user/dashboard"
       rightPanelOverflow={rightPanelOverflow}

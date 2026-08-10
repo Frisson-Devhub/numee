@@ -21,11 +21,19 @@ alwaysApply: true
 - No secrets in `packages/shared` or frontend apps; keep secrets in `apps/api` / root env consumed by the API
 - Dev ports: candidate `3000`, API `3001`, admin `3002`, recruiter `3003`
 
+## Portal sessions
+
+- Use **separate cookie names per portal** (`numee_candidate_session`, `numee_recruiter_session`, `numee_admin_session`). Never share a single `session` cookie across portals.
+- Keep `/api` **same-origin proxies** (Next rewrites / Vite proxy) so cookies stay on each app’s origin in local and typical deployments.
+- Each portal has its **own login UI and login endpoint**. Do not sign admins or recruiters in via candidate auth (`POST /api/auth/login` rejects those roles).
+- Nest `SessionGuard` resolves the cookie from the request path (`/api/admin/*`, `/api/recruiter/*`, else candidate).
+- Cookie name constants live in `@numee/shared` (`PORTAL_SESSION_COOKIES`); API setters and frontend readers must stay aligned.
+
 ## Commenting / JSDoc
 
 Document exported and public APIs with short `/** … */` blocks (1–3 sentences) focused on why, invariants, and side effects. Prefer TypeScript types over `@param` / `@returns` noise.
 
-**Document:** package exports (`@numee/shared` types, constants, utils, components); Nest route handlers (intent / auth / side effects); Nest services and processors (public methods + non-obvious builders); frontend `lib/` helpers and non-obvious component props/behavior.
+**Document:** package exports (`@numee/shared` types, constants, utils, components); Nest route handlers (intent / auth / side effects); Nest services and processors (public methods + non-obvious builders); frontend `lib/` helpers and non-obvious component props/behavior — especially portal auth helpers, guards, login gates, and session cookie utilities.
 
 **Skip:** private one-liner helpers and trivial mappers; thin page shells / presentational wrappers where names + types suffice; generated/config (`next-env.d.ts`, Vite env, Prisma client, prompt blobs).
 

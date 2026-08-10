@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Chip } from "@numee/shared/components";
 import { Spinner } from "@/components/ui/Spinner";
+import { jobStatusChipVariant } from "@/components/jobs/jobStatusChip";
 import { apiRoutes } from "@/constants/api";
 import { recruiterRoutes } from "@/constants/frontendRoutes";
 import { ApiCall } from "@/lib/utils";
@@ -14,17 +16,6 @@ const filters = [
   { value: "PUBLISHED", label: "Published" },
   { value: "CLOSED", label: "Closed" },
 ] as const;
-
-function statusStyles(status?: string) {
-  switch (status) {
-    case "PUBLISHED":
-      return "bg-success/10 text-success";
-    case "CLOSED":
-      return "bg-foreground-subtle/15 text-foreground-subtle";
-    default:
-      return "bg-brand-accent/10 text-brand-accent";
-  }
-}
 
 /** Company job list with optional status filter (draft / published / closed). */
 export default function JobsListPage() {
@@ -70,7 +61,7 @@ export default function JobsListPage() {
         </div>
         <Link
           href={recruiterRoutes.jobsNew}
-          className="inline-flex items-center rounded-lg bg-brand-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-primary-bright transition-colors"
+          className="inline-flex items-center rounded-lg bg-brand-primary px-4 py-2.5 text-sm font-semibold text-on-brand hover:bg-brand-primary-bright transition-colors"
         >
           New job
         </Link>
@@ -78,18 +69,14 @@ export default function JobsListPage() {
 
       <div className="flex flex-wrap gap-2">
         {filters.map((f) => (
-          <button
+          <Chip
             key={f.label}
-            type="button"
+            variant="outline"
+            selected={status === f.value}
             onClick={() => setStatus(f.value)}
-            className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${
-              status === f.value
-                ? "bg-brand-primary text-white"
-                : "bg-surface border border-border-default text-foreground-muted hover:bg-surface-muted"
-            }`}
           >
             {f.label}
-          </button>
+          </Chip>
         ))}
       </div>
 
@@ -125,11 +112,13 @@ export default function JobsListPage() {
                       .join(" · ") || "No details yet"}
                   </p>
                 </div>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${statusStyles(job.status)}`}
+                <Chip
+                  size="sm"
+                  variant={jobStatusChipVariant(job.status)}
+                  className="uppercase tracking-wide"
                 >
                   {job.status}
-                </span>
+                </Chip>
               </Link>
             </li>
           ))}

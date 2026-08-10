@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
-import { X } from "lucide-react";
+import { Chip } from "@numee/shared/components";
 
 function parseSkills(value: string): string[] {
   return value
@@ -72,27 +72,21 @@ export function SkillsChipInput({
         Required skills
       </label>
       <div
-        className={`flex min-h-[2.75rem] flex-wrap items-center gap-2 rounded-lg border border-border-default bg-surface px-3 py-2 transition focus-within:ring-2 focus-within:ring-focus-ring ${
+        className={`flex min-h-11 flex-wrap items-center gap-1.5 rounded-lg border border-border-default bg-surface px-2.5 py-2 shadow-sm transition duration-200 hover:border-border-strong focus-within:border-focus-ring focus-within:shadow-input-focus ${
           disabled ? "opacity-60" : ""
         }`}
       >
         {skills.map((skill) => (
-          <span
+          <Chip
             key={skill}
-            className="inline-flex max-w-full items-center gap-1 rounded-md bg-brand-primary/10 px-2.5 py-1 text-sm font-medium text-brand-primary"
+            variant="brand"
+            size="sm"
+            disabled={disabled}
+            dismissLabel={`Remove ${skill}`}
+            onDismiss={disabled ? undefined : () => removeSkill(skill)}
           >
-            <span className="truncate">{skill}</span>
-            {!disabled && (
-              <button
-                type="button"
-                aria-label={`Remove ${skill}`}
-                onClick={() => removeSkill(skill)}
-                className="inline-flex shrink-0 rounded p-0.5 text-brand-primary/70 transition hover:bg-brand-primary/15 hover:text-brand-primary"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </span>
+            {skill}
+          </Chip>
         ))}
         <input
           id={id}
@@ -105,7 +99,7 @@ export function SkillsChipInput({
           onBlur={() => {
             if (draft.trim()) addSkill(draft);
           }}
-          className="min-w-[10rem] flex-1 border-0 bg-transparent py-1 text-sm text-foreground outline-none placeholder:text-foreground-subtle disabled:cursor-not-allowed"
+          className="min-w-[10rem] flex-1 border-0 bg-transparent px-1.5 py-1.5 text-sm text-foreground outline-none placeholder:text-foreground-subtle disabled:cursor-not-allowed"
         />
       </div>
       <p className="mt-1.5 text-xs text-foreground-subtle">

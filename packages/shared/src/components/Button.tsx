@@ -9,11 +9,11 @@ const sizeClasses = {
 
 const variantClasses = {
   primary:
-    "bg-gradient-to-r from-brand-primary-bright to-brand-accent-bright text-white font-bold uppercase tracking-wider shadow-[inset_0_1px_0_rgba(0,0,0,0.1)] hover:opacity-95 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed",
+    "bg-gradient-to-r from-brand-primary-bright to-brand-accent-bright text-on-brand font-bold uppercase tracking-wider shadow-[inset_0_1px_0_rgba(0,0,0,0.1)] hover:opacity-95 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed",
   secondary:
-    "bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors disabled:opacity-70 disabled:cursor-not-allowed",
+    "bg-surface-subtle text-foreground font-semibold hover:bg-border-soft transition-colors disabled:opacity-70 disabled:cursor-not-allowed",
   outline:
-    "border-2 border-current bg-transparent font-semibold hover:bg-black/5 transition-colors disabled:opacity-70 disabled:cursor-not-allowed",
+    "border-2 border-border-strong bg-transparent text-foreground font-semibold hover:bg-surface-muted transition-colors disabled:opacity-70 disabled:cursor-not-allowed",
 } as const;
 
 export type ButtonSize = keyof typeof sizeClasses;

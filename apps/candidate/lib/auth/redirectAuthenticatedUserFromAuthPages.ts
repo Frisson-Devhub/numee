@@ -2,11 +2,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifySession } from "@/lib/auth";
 import { frontendRoutes } from "@/constants/frontendRoutes";
+import { CANDIDATE_SESSION_COOKIE } from "@/lib/auth/sessionCookie";
 
-/** If a valid session exists, send the user to the dashboard (shared by login routes). */
+/** If a valid candidate session exists, send the user to the dashboard (shared by login routes). */
 export async function redirectAuthenticatedUserFromAuthPages() {
   const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("session")?.value;
+  const sessionToken = cookieStore.get(CANDIDATE_SESSION_COOKIE)?.value;
 
   if (!sessionToken) return;
 

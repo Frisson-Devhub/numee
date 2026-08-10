@@ -1,17 +1,20 @@
 "use client";
 
 /**
- * Shared marketing headline + body used on desktop auth sidebar and mobile auth header.
+ * Brand-first marketing copy for desktop auth sidebar and mobile auth header.
+ * Product name leads; headline and body stay secondary so the composition stays branded.
  */
 export function AuthBrandingCopy({ className = "" }: { className?: string }) {
   return (
-    <div className={`space-y-4 w-full ${className}`.trim()}>
-      <h1 className="text-[16px] lg:text-3xl font-semibold lg:font-bold text-white leading-tight w-full">
-        Secure & Scalable Mentorship Management
+    <div className={`w-full space-y-5 ${className}`.trim()}>
+      <h1 className="text-4xl font-semibold tracking-tight text-auth-on-panel xl:text-5xl">
+        NuMee
       </h1>
-      <p className="text-white/90 text-[12px] lg:text-base leading-relaxed max-w-md">
-        Orchestrate thousands of mentorship connections with our AI-powered engine. Enterprise-grade security keeps
-        your data safe.
+      <p className="max-w-md text-xl font-medium leading-snug tracking-tight text-auth-on-panel xl:text-2xl">
+        Mentorship that scales with enterprise trust
+      </p>
+      <p className="max-w-sm text-sm leading-relaxed text-auth-on-panel-muted xl:text-base">
+        Orchestrate mentorship connections with AI-guided workflows and security built for regulated teams.
       </p>
     </div>
   );

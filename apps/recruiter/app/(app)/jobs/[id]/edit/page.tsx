@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { Chip } from "@numee/shared/components";
 import { Spinner } from "@/components/ui/Spinner";
 import { JobForm, type JobRecord } from "@/components/jobs/JobForm";
+import { jobStatusChipVariant } from "@/components/jobs/jobStatusChip";
 import { apiRoutes } from "@/constants/api";
 import { ApiCall } from "@/lib/utils";
 
@@ -49,20 +51,36 @@ export default function EditJobPage() {
   const statusLabel = job.status?.replaceAll("_", " ") ?? "Draft";
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <header className="space-y-2 border-b border-border-default pb-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-primary">
-          Jobs
-        </p>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Edit job
-          </h1>
-          <span className="inline-flex items-center rounded-md bg-brand-primary/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-brand-primary">
-            {statusLabel}
-          </span>
+    <div className="mx-auto max-w-6xl space-y-8">
+      <header className="relative overflow-hidden rounded-xl border border-border-default bg-surface shadow-sm">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-primary/[0.07] via-transparent to-auth-panel-accent/10"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-brand-primary to-brand-primary-bright"
+        />
+        <div className="relative space-y-2.5 px-5 py-6 sm:px-7 sm:py-7">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-primary">
+            Jobs
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[1.75rem]">
+              Edit job
+            </h1>
+            <Chip
+              size="sm"
+              variant={jobStatusChipVariant(job.status)}
+              className="uppercase tracking-wide"
+            >
+              {statusLabel}
+            </Chip>
+          </div>
+          <p className="max-w-2xl text-sm leading-relaxed text-foreground-muted">
+            {job.title}
+          </p>
         </div>
-        <p className="max-w-2xl text-sm text-foreground-muted">{job.title}</p>
       </header>
       <JobForm mode="edit" job={job} />
     </div>

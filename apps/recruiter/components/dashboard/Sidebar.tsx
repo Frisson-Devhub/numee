@@ -30,8 +30,9 @@ const isSmallScreen = () =>
 type SidebarUser = { fullName: string; email: string };
 
 /**
- * Recruiter nav. Resolves display name from team members matching `userEmail`
- * (session), falling back to the first member.
+ * Recruiter nav on `auth-teal` (same ink as login branding panel).
+ * Resolves display name from team members matching `userEmail` (session),
+ * falling back to the first member.
  */
 export function Sidebar({
   onClose,
@@ -95,12 +96,12 @@ export function Sidebar({
     : "…";
 
   return (
-    <div className="flex h-full w-64 flex-col bg-brand-primary text-white shadow-xl z-10">
-      <div className="flex h-20 items-center px-6 border-b border-white/15">
+    <div className="z-10 flex h-full w-64 flex-col bg-auth-teal text-auth-on-panel shadow-xl">
+      <div className="flex h-20 items-center border-b border-auth-on-panel/15 px-6">
         <Link
           href={recruiterRoutes.dashboard}
           onClick={closeOnSmallScreen}
-          className="focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
+          className="rounded focus:outline-none focus:ring-2 focus:ring-auth-panel-accent/60"
         >
           <Image
             src="/numee-logo.png"
@@ -126,15 +127,15 @@ export function Sidebar({
               onClick={closeOnSmallScreen}
               className={`group flex items-center rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? "bg-white/10 text-white shadow-sm backdrop-blur-sm scale-[1.02]"
-                  : "text-white/80 hover:bg-white/5 hover:text-white"
+                  ? "scale-[1.02] bg-auth-on-panel/10 text-auth-on-panel shadow-sm backdrop-blur-sm"
+                  : "text-auth-on-panel/80 hover:bg-auth-on-panel/5 hover:text-auth-on-panel"
               }`}
             >
               <item.icon
                 className={`mr-3 h-5 w-5 shrink-0 transition-transform group-hover:scale-110 ${
                   isActive
-                    ? "text-brand-accent-bright"
-                    : "text-white/70 group-hover:text-white"
+                    ? "text-auth-panel-accent"
+                    : "text-auth-on-panel/70 group-hover:text-auth-on-panel"
                 }`}
               />
               {item.name}
@@ -143,13 +144,13 @@ export function Sidebar({
         })}
       </nav>
 
-      <div className="border-t border-white/15 bg-black/10">
+      <div className="border-t border-auth-on-panel/15 bg-black/10">
         <div className="p-4">
           <div className="flex items-center gap-3">
             <Link
               href={recruiterRoutes.settings}
               onClick={closeOnSmallScreen}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/10 text-sm font-semibold text-white hover:bg-white/20 transition-colors"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-auth-on-panel/40 bg-auth-on-panel/10 text-sm font-semibold text-auth-on-panel transition-colors hover:bg-auth-on-panel/20"
               aria-label="Settings"
             >
               {initials}
@@ -159,10 +160,10 @@ export function Sidebar({
               onClick={closeOnSmallScreen}
               className="min-w-0 flex-1"
             >
-              <p className="truncate text-sm font-semibold text-white">
+              <p className="truncate text-sm font-semibold text-auth-on-panel">
                 {user?.fullName || "—"}
               </p>
-              <p className="truncate text-xs text-white/70">
+              <p className="truncate text-xs text-auth-on-panel/70">
                 {user?.email || "—"}
               </p>
             </Link>
@@ -173,7 +174,7 @@ export function Sidebar({
                 void handleSignOut();
               }}
               aria-label="Sign out"
-              className="shrink-0 rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+              className="shrink-0 cursor-pointer rounded-lg p-2 text-auth-on-panel/70 transition-colors hover:bg-auth-on-panel/10 hover:text-auth-on-panel"
             >
               <LogOut className="h-5 w-5" />
             </button>

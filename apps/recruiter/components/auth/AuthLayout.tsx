@@ -18,7 +18,7 @@ export function AuthLayout({
   rightPanelOverflow,
   maxWidth = "max-w-md",
   hideSidebar = false,
-  background = "bg-surface",
+  background = "bg-surface-muted",
   fillViewport = false,
 }: {
   children: React.ReactNode;
@@ -30,6 +30,7 @@ export function AuthLayout({
 }) {
   return (
     <AuthShell
+      portal="recruiter"
       logoSrc={NUMEE_LOGO}
       logoOnLightSrc={NUMEE_LOGO_ON_LIGHT}
       bgSrc={AUTH_PANEL_BG}

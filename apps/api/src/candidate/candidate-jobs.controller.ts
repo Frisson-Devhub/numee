@@ -185,9 +185,24 @@ export class CandidateJobsController {
 
     const application = job.applications[0];
     const { applications, ...details } = job;
+    /**
+     * When a job description exists it is the candidate-facing source of truth;
+     * omit structured role-detail fields so they are not shown separately.
+     */
+    const hasJobDescription = Boolean(
+      details.description
+        ?.replace(/<[^>]*>/g, " ")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim(),
+    );
+
     return {
       job: {
         ...details,
+        responsibilities: hasJobDescription ? null : details.responsibilities,
+        requirements: hasJobDescription ? null : details.requirements,
+        benefits: hasJobDescription ? null : details.benefits,
         hasApplied: Boolean(application),
         applicationStatus: application?.status ?? null,
         appliedAt: application?.appliedAt ?? null,

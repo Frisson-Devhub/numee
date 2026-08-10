@@ -38,7 +38,7 @@ export function Modal({
       aria-modal="true"
     >
       <div
-        className={`relative w-full max-w-md rounded-xl bg-white shadow-xl ${className}`}
+        className={`relative w-full max-w-md rounded-xl bg-surface text-foreground shadow-xl ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

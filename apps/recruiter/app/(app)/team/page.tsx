@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Formik, Form, ErrorMessage, type FormikHelpers } from "formik";
+import { Chip } from "@numee/shared/components";
 import { LabeledInput } from "@/components/ui/LabeledInput";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { Button } from "@/components/ui/Button";
@@ -193,9 +194,9 @@ export default function TeamPage() {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="rounded-full bg-brand-primary/10 px-2.5 py-1 text-xs font-medium text-brand-primary">
+                <Chip size="sm" variant="brand">
                   {m.role}
-                </span>
+                </Chip>
                 {isOwner && m.role !== "OWNER" && (
                   <Button
                     type="button"

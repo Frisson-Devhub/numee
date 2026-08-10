@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-plus-jakarta",
   display: "swap",
 });
 
@@ -14,14 +14,18 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.png" },
 };
 
+/**
+ * Root shell. `data-portal="recruiter"` scopes shared brand/focus tokens to the
+ * login teal palette so dashboard chrome matches AuthShell.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} antialiased font-sans`}>
+    <html lang="en" data-portal="recruiter">
+      <body className={`${plusJakarta.variable} antialiased font-sans`}>
         {children}
       </body>
     </html>

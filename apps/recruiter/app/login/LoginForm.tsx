@@ -10,6 +10,7 @@ import { LabeledInput } from "@/components/ui/LabeledInput";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { CheckboxField } from "@/components/ui/CheckboxField";
 import { GradientButton } from "@/components/ui/GradientButton";
+import { AuthCallout } from "@numee/shared/components";
 import { apiRoutes } from "@/constants/api";
 import { recruiterRoutes } from "@/constants/frontendRoutes";
 import { LoginSchema } from "@/constants/formikSchema";
@@ -59,86 +60,82 @@ export default function LoginForm({
 
   return (
     <AuthLayout>
-      <AuthFormHeading
-        title="Recruiter sign in"
-        subtitle="Access your company hiring workspace."
-      />
+      <div className="space-y-6">
+        <AuthFormHeading
+          title="Recruiter sign in"
+          subtitle="Access your company hiring workspace."
+        />
 
-      <div className="flex gap-3 p-4 rounded-lg bg-brand-primary/5 border border-brand-primary/15">
-        <div className="shrink-0 w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center">
-          <span className="text-white font-bold text-sm">!</span>
-        </div>
-        <p className="text-sm text-foreground-muted">
-          <span className="font-semibold text-foreground">Secure portal.</span>{" "}
+        <AuthCallout title="Secure portal.">
           Use your company recruiter credentials.
+        </AuthCallout>
+
+        <Formik<LoginValues>
+          initialValues={{ email: "", password: "" }}
+          validationSchema={LoginSchema}
+          onSubmit={handleLogin}
+        >
+          {({ isSubmitting, setFieldValue, values }) => (
+            <Form className="space-y-5">
+              <LabeledInput
+                id="email"
+                type="email"
+                label="Work email"
+                placeholder="you@company.com"
+                value={values.email}
+                onChange={(e) => setFieldValue("email", e.target.value)}
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="text-danger text-sm"
+              />
+              <PasswordInput
+                id="password"
+                label="Password"
+                placeholder="••••••••••"
+                value={values.password}
+                onChange={(e) => setFieldValue("password", e.target.value)}
+              />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="text-danger text-sm"
+              />
+              <div className="flex items-center justify-between gap-3">
+                <CheckboxField
+                  id="remember"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  label="Remember me"
+                />
+                <Link
+                  href={recruiterRoutes.forgotPassword}
+                  className="shrink-0 text-sm font-medium text-brand-primary transition hover:text-brand-primary-bright"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              {error && (
+                <p className="text-sm font-medium text-danger">{error}</p>
+              )}
+              <GradientButton disabled={isSubmitting}>
+                {isSubmitting ? "Signing in..." : "Sign in"}
+              </GradientButton>
+            </Form>
+          )}
+        </Formik>
+
+        <p className="text-center text-sm text-foreground-subtle">
+          New company?{" "}
+          <Link
+            href={recruiterRoutes.signup}
+            className="font-medium text-brand-primary transition hover:text-brand-primary-bright"
+          >
+            Create an account
+          </Link>
         </p>
       </div>
-
-      <Formik<LoginValues>
-        initialValues={{ email: "", password: "" }}
-        validationSchema={LoginSchema}
-        onSubmit={handleLogin}
-      >
-        {({ isSubmitting, setFieldValue, values }) => (
-          <Form className="space-y-5">
-            <LabeledInput
-              id="email"
-              type="email"
-              label="Work email"
-              placeholder="you@company.com"
-              value={values.email}
-              onChange={(e) => setFieldValue("email", e.target.value)}
-            />
-            <ErrorMessage
-              name="email"
-              component="div"
-              className="text-danger text-sm"
-            />
-            <PasswordInput
-              id="password"
-              label="Password"
-              placeholder="••••••••••"
-              value={values.password}
-              onChange={(e) => setFieldValue("password", e.target.value)}
-            />
-            <ErrorMessage
-              name="password"
-              component="div"
-              className="text-danger text-sm"
-            />
-            <div className="flex items-center justify-between gap-3">
-              <CheckboxField
-                id="remember"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                label="Remember me"
-              />
-              <Link
-                href={recruiterRoutes.forgotPassword}
-                className="text-sm font-medium text-brand-primary hover:text-brand-primary-bright shrink-0"
-              >
-                Forgot password?
-              </Link>
-            </div>
-            {error && (
-              <p className="text-danger text-sm font-medium">{error}</p>
-            )}
-            <GradientButton disabled={isSubmitting}>
-              {isSubmitting ? "Signing in..." : "Sign in"}
-            </GradientButton>
-          </Form>
-        )}
-      </Formik>
-
-      <p className="text-sm text-foreground-subtle text-center">
-        New company?{" "}
-        <Link
-          href={recruiterRoutes.signup}
-          className="font-medium text-brand-primary hover:text-brand-primary-bright underline"
-        >
-          Create an account
-        </Link>
-      </p>
     </AuthLayout>
   );
 }

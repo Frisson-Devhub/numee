@@ -5,7 +5,8 @@
 @source "../../../packages/shared/src";
 
 :root {
-  /* App chrome background; foreground tokens come from shared tokens.css */
+  /* Light product chrome; brand teal comes from html[data-portal="recruiter"] */
+  color-scheme: light;
   --background: var(--surface-muted);
 }
 
@@ -23,6 +24,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* TipTap / rich job description content */

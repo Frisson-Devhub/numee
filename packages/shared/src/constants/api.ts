@@ -44,6 +44,11 @@ export const apiRoutes = {
     submit: "/api/questionnaire/submit",
   },
   admin: {
+    auth: {
+      login: "/api/admin/auth/login",
+      logout: "/api/admin/auth/logout",
+      me: "/api/admin/auth/me",
+    },
     bulkOnboard: "/api/admin/bulk-onboard",
     users: "/api/admin/users",
     industries: "/api/admin/industries",

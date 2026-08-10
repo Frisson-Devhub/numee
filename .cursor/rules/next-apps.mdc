@@ -11,6 +11,7 @@ alwaysApply: false
 - Use `@numee/shared` `ApiCall` (or shared HTTP helpers) for API requests
 - In dev, **proxy `/api` → Nest** (`localhost:3001`) via `next.config` rewrites so cookies stay same-origin
 - Leave `NEXT_PUBLIC_API_URL` empty when using the proxy; set it only for explicit cross-origin
+- Session cookies are portal-scoped: candidate `numee_candidate_session`, recruiter `numee_recruiter_session` — read via each app’s `lib/auth/sessionCookie` helper, never the legacy `session` name
 
 ## Recruiter (`apps/recruiter`)
 

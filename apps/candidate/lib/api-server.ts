@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { CANDIDATE_SESSION_COOKIE } from "@/lib/auth/sessionCookie";
 
 const API_ORIGIN = process.env.API_URL || "http://localhost:3001";
 
@@ -12,7 +13,7 @@ export type ProfileSummary = {
 };
 
 /**
- * Server-side fetch to Nest with the session cookie forwarded.
+ * Server-side fetch to Nest with the candidate portal session cookie forwarded.
  * Uses `API_URL` (not the browser proxy); returns status 0 on network failure.
  */
 export async function fetchApiServer<T = unknown>(
@@ -20,10 +21,10 @@ export async function fetchApiServer<T = unknown>(
   init?: RequestInit
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
   const cookieStore = await cookies();
-  const session = cookieStore.get("session")?.value;
+  const session = cookieStore.get(CANDIDATE_SESSION_COOKIE)?.value;
   const headers = new Headers(init?.headers);
   if (session) {
-    headers.set("Cookie", `session=${session}`);
+    headers.set("Cookie", `${CANDIDATE_SESSION_COOKIE}=${session}`);
   }
   try {
     const res = await fetch(`${API_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`, {

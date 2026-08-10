@@ -14,8 +14,8 @@ import { MailService } from "../../mail/mail.module";
 import { generateOTP } from "../../otp/otp";
 import { signSession, verifySession } from "../../common/auth";
 import {
-  clearSessionCookie,
-  setSessionCookie,
+  clearPortalSessionCookie,
+  setPortalSessionCookie,
 } from "../../common/cookies/session-cookie";
 
 const SALT_ROUNDS = 10;
@@ -211,7 +211,7 @@ export class RecruiterAuthController {
         id: result.user.id,
         email: result.user.emailOrPhone,
       });
-      setSessionCookie(res, session);
+      setPortalSessionCookie(res, "recruiter", session);
 
       return {
         message: "OTP verified successfully",
@@ -316,7 +316,7 @@ export class RecruiterAuthController {
         where: { id: user.id },
         data: { lastLogin: new Date() },
       });
-      setSessionCookie(res, session);
+      setPortalSessionCookie(res, "recruiter", session);
 
       return {
         message: "Login successful",
@@ -330,10 +330,10 @@ export class RecruiterAuthController {
     }
   }
 
-  /** Clear the session cookie for recruiter portal. */
+  /** Clear the recruiter portal session cookie. */
   @Post("logout")
   async logout(@Res({ passthrough: true }) res: Response) {
-    clearSessionCookie(res);
+    clearPortalSessionCookie(res, "recruiter");
     return { message: "Signed out successfully" };
   }
 

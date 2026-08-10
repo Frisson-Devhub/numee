@@ -1,4 +1,4 @@
-/** Inline SVG loading spinner; size/color via `className` (e.g. `w-5 h-5 text-white`). */
+/** Inline SVG loading spinner; size/color via `className` (e.g. `w-5 h-5 text-on-brand`). */
 export function Spinner({ className = "" }: { className?: string }) {
   return (
     <svg

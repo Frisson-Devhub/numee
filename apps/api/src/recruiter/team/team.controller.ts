@@ -24,8 +24,8 @@ import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { CurrentMembership } from "../../common/decorators/current-membership.decorator";
 import { signSession, verifySession } from "../../common/auth";
 import {
-  SESSION_COOKIE,
-  setSessionCookie,
+  PORTAL_SESSION_COOKIES,
+  setPortalSessionCookie,
 } from "../../common/cookies/session-cookie";
 import type { SessionPayload } from "../../common/auth";
 import type { MembershipContext } from "../../common/guards/recruiter.guard";
@@ -242,7 +242,9 @@ export class TeamController {
     }
 
     const inviteEmail = normalizeEmail(invitation.email);
-    const cookieToken = req.cookies?.[SESSION_COOKIE] as string | undefined;
+    const cookieToken = req.cookies?.[
+      PORTAL_SESSION_COOKIES.recruiter
+    ] as string | undefined;
     const session = cookieToken ? verifySession(cookieToken) : null;
     let signedInEmail: string | null = null;
     let sessionMatchesInvite = false;
@@ -297,7 +299,9 @@ export class TeamController {
       }
 
       const inviteEmail = normalizeEmail(invitation.email);
-      const cookieToken = req.cookies?.[SESSION_COOKIE] as string | undefined;
+      const cookieToken = req.cookies?.[
+        PORTAL_SESSION_COOKIES.recruiter
+      ] as string | undefined;
       const session = cookieToken ? verifySession(cookieToken) : null;
 
       const sessionUser = session?.id
@@ -421,7 +425,7 @@ export class TeamController {
         id: user.id,
         email: normalizeEmail(user.emailOrPhone),
       });
-      setSessionCookie(res, newSession);
+      setPortalSessionCookie(res, "recruiter", newSession);
 
       return {
         message: "Invitation accepted",

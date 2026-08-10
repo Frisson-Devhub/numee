@@ -17,6 +17,7 @@ export const frontendRoutes = {
 
 /** Admin Vite app path constants (port 3002). */
 export const adminRoutes = {
+  login: "/login",
   dashboard: "/dashboard",
   userManagement: "/user-management",
   universityManagement: "/university-management",

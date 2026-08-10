@@ -90,19 +90,33 @@ export class AiJobsController {
       const benefits = body.benefits?.trim() || "";
       const skills =
         body.skills?.map((s) => s.name).filter(Boolean) ?? [];
+      const employmentType = body.employmentType?.trim() || "";
+      const workMode = body.workMode?.trim() || "";
+      const location = body.location?.trim() || "";
+      const industryName = body.industryName?.trim() || "";
+      const jobRoleName = body.jobRoleName?.trim() || "";
 
+      /** Prerequisites aligned with the recruiter JobForm “Create with AI” gate. */
+      const missingForAi: string[] = [];
+      if (!title) missingForAi.push("Job title");
+      if (!industryName) missingForAi.push("Industry");
+      if (!jobRoleName) missingForAi.push("Job role");
+      if (!employmentType) missingForAi.push("Employment type");
+      if (!workMode) missingForAi.push("Work mode");
+      if (!location) missingForAi.push("Location");
       if (
-        !title &&
-        !description &&
-        !responsibilities &&
-        !requirements &&
-        !benefits &&
-        skills.length === 0
+        body.experienceMin === null ||
+        body.experienceMin === undefined ||
+        !Number.isFinite(Number(body.experienceMin))
       ) {
+        missingForAi.push("Min years of experience");
+      }
+      if (skills.length === 0) missingForAi.push("Skills");
+
+      if (missingForAi.length > 0) {
         throw new HttpException(
           {
-            error:
-              "Add a job title or description details before summarizing",
+            error: `Fill required fields before creating a job description with AI: ${missingForAi.join(", ")}.`,
           },
           400,
         );
@@ -136,9 +150,9 @@ Write a complete job description suitable for posting, structured with semantic 
               benefits,
               skills,
               department: body.department ?? null,
-              employmentType: body.employmentType ?? null,
-              workMode: body.workMode ?? null,
-              location: body.location ?? null,
+              employmentType: employmentType || null,
+              workMode: workMode || null,
+              location: location || null,
               experienceMin: body.experienceMin ?? null,
               experienceMax: body.experienceMax ?? null,
               noticePeriod: body.noticePeriod ?? null,
@@ -146,8 +160,8 @@ Write a complete job description suitable for posting, structured with semantic 
               salaryMax: body.salaryMax ?? null,
               salaryCurrency: body.salaryCurrency ?? null,
               salaryNegotiable: body.salaryNegotiable ?? false,
-              industryName: body.industryName ?? null,
-              jobRoleName: body.jobRoleName ?? null,
+              industryName: industryName || null,
+              jobRoleName: jobRoleName || null,
             }),
           },
         ],

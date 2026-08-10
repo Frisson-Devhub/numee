@@ -3,7 +3,7 @@
 import { useRef, useCallback, KeyboardEvent, ClipboardEvent } from "react";
 
 const inputClassName =
-  "w-11 h-11 sm:w-12 sm:h-12 text-center text-lg font-semibold rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-gray-700";
+  "h-11 w-11 rounded-lg border border-border-default bg-surface text-center text-lg font-semibold text-foreground outline-none transition placeholder:text-foreground-subtle hover:border-border-strong focus:border-focus-ring focus:shadow-input-focus sm:h-12 sm:w-12";
 
 /**
  * Multi-box numeric OTP entry with paste and arrow/backspace navigation.
@@ -65,7 +65,7 @@ export function OTPInput({
 
   return (
     <div className={`${className}`}>
-      <label htmlFor={`${id}-0`} className="block text-sm font-medium text-gray-700 mb-2">
+      <label htmlFor={`${id}-0`} className="mb-2 block text-sm font-medium text-foreground-muted">
         {label}
       </label>
       <div className="flex justify-between">

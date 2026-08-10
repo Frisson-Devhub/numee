@@ -17,8 +17,8 @@ import { MailService } from "../mail/mail.module";
 import { generateOTP } from "../otp/otp";
 import { signSession, verifySession } from "../common/auth";
 import {
-  clearSessionCookie,
-  setSessionCookie,
+  clearPortalSessionCookie,
+  setPortalSessionCookie,
 } from "../common/cookies/session-cookie";
 
 const SALT_ROUNDS = 10;
@@ -192,7 +192,7 @@ export class AuthController {
 
       await this.redis.del(redisKey);
       const session = signSession({ id: user.id, email: user.emailOrPhone });
-      setSessionCookie(res, session);
+      setPortalSessionCookie(res, "candidate", session);
 
       return {
         message: "OTP verified successfully",
@@ -294,7 +294,7 @@ export class AuthController {
         where: { id: user.id },
         data: { lastLogin: new Date() },
       });
-      setSessionCookie(res, session);
+      setPortalSessionCookie(res, "candidate", session);
 
       return { message: "Login successful", redirectTo: "dashboard" };
     } catch (error) {
@@ -304,10 +304,10 @@ export class AuthController {
     }
   }
 
-  /** Clear the session cookie. */
+  /** Clear the candidate portal session cookie. */
   @Post("signout")
   async signout(@Res({ passthrough: true }) res: Response) {
-    clearSessionCookie(res);
+    clearPortalSessionCookie(res, "candidate");
     return { message: "Signed out successfully" };
   }
 
@@ -524,7 +524,7 @@ export class AuthController {
       }
 
       const session = signSession({ id: user.id, email });
-      setSessionCookie(res, session);
+      setPortalSessionCookie(res, "candidate", session);
 
       const hasCompletedSocial = Boolean(
         user.linkedInUrl?.trim() || user.resumeUrl?.trim(),

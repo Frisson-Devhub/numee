@@ -131,7 +131,7 @@ export default function DashboardPage() {
         </div>
         <Link
           href={recruiterRoutes.jobsNew}
-          className="inline-flex items-center rounded-lg bg-brand-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-primary-bright transition-colors"
+          className="inline-flex items-center rounded-lg bg-brand-primary px-4 py-2.5 text-sm font-semibold text-on-brand hover:bg-brand-primary-bright transition-colors"
         >
           Post a job
         </Link>

@@ -28,7 +28,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-border-default bg-surface px-4 shadow-sm sm:px-6">
       <button
         type="button"
-        className="text-foreground-subtle hover:text-foreground cursor-pointer"
+        className="cursor-pointer text-foreground-subtle transition-colors hover:text-brand-primary"
         onClick={onMenuClick}
         aria-label="Toggle menu"
       >
@@ -43,7 +43,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               e.stopPropagation();
               setDropdownOpen((v) => !v);
             }}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-muted text-foreground-muted hover:bg-border-default transition-colors cursor-pointer"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-brand-primary/10 text-brand-primary transition-colors hover:bg-brand-primary/15"
             aria-expanded={dropdownOpen}
             aria-haspopup="true"
           >
@@ -55,7 +55,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               <Link
                 href={recruiterRoutes.settings}
                 onClick={() => setDropdownOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-muted hover:bg-surface-muted"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-muted transition-colors hover:bg-brand-primary/5 hover:text-brand-primary"
               >
                 <User className="h-4 w-4" />
                 Account
@@ -63,7 +63,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               <Link
                 href={recruiterRoutes.company}
                 onClick={() => setDropdownOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-muted hover:bg-surface-muted"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-muted transition-colors hover:bg-brand-primary/5 hover:text-brand-primary"
               >
                 <Building2 className="h-4 w-4" />
                 Company
@@ -71,7 +71,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               <Link
                 href={recruiterRoutes.jobs}
                 onClick={() => setDropdownOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-muted hover:bg-surface-muted"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-muted transition-colors hover:bg-brand-primary/5 hover:text-brand-primary"
               >
                 <Briefcase className="h-4 w-4" />
                 Jobs

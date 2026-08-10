@@ -9,8 +9,12 @@ type MobileAuthLayoutProps = {
 };
 
 /**
- * Mobile-first auth shell: brand header + white sheet with large top radius (matches app / PWA login).
+ * Mobile-first auth shell: brand header + mist sheet with large top radius (matches app / PWA login).
  */
 export function MobileAuthLayout({ children }: MobileAuthLayoutProps) {
-  return <MobileAuthShell logoSrc={NUMEE_LOGO}>{children}</MobileAuthShell>;
+  return (
+    <MobileAuthShell portal="candidate" logoSrc={NUMEE_LOGO}>
+      {children}
+    </MobileAuthShell>
+  );
 }

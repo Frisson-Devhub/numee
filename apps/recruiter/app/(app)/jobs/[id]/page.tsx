@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { Chip } from "@numee/shared/components";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
+import { jobStatusChipVariant } from "@/components/jobs/jobStatusChip";
 import { apiRoutes } from "@/constants/api";
 import { recruiterRoutes } from "@/constants/frontendRoutes";
 import { ApiCall } from "@/lib/utils";
@@ -254,7 +256,7 @@ export default function JobDetailPage() {
             {job.status !== "CLOSED" && (
               <Link
                 href={recruiterRoutes.jobEdit(job.id)}
-                className="inline-flex items-center rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-primary-bright"
+                className="inline-flex items-center rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-on-brand transition-colors hover:bg-brand-primary-bright"
               >
                 Edit job
               </Link>
@@ -337,15 +339,12 @@ export default function JobDetailPage() {
 
           <section className="rounded-xl border border-border-default bg-surface p-5 shadow-sm sm:p-6">
             <h2 className="text-lg font-semibold text-foreground">Skills</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-1.5">
               {(job.skills ?? []).length ? (
                 job.skills?.map((skill) => (
-                  <span
-                    key={skill.name}
-                    className="rounded-full bg-surface-muted px-3 py-1.5 text-sm text-foreground"
-                  >
+                  <Chip key={skill.name} variant="brand" size="sm">
                     {skill.name}
-                  </span>
+                  </Chip>
                 ))
               ) : (
                 <p className="text-sm text-foreground-subtle">No skills specified.</p>
@@ -385,11 +384,11 @@ export default function JobDetailPage() {
                 <h2 className="text-lg font-semibold text-foreground">Applied candidates</h2>
                 <p className="mt-1 text-sm text-foreground-muted">Review applicants and update their hiring stage.</p>
               </div>
-              <span className="rounded-full bg-surface-muted px-3 py-1 text-sm font-medium text-foreground-muted">
+              <Chip size="sm" variant="neutral" className="text-foreground-muted">
                 {applicants.length} total
-              </span>
+              </Chip>
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
               {applicationFilters.map((filter) => {
                 const count =
                   filter.value === "ALL"
@@ -397,18 +396,16 @@ export default function JobDetailPage() {
                     : applicationCounts[filter.value];
                 const selected = applicationFilter === filter.value;
                 return (
-                  <button
+                  <Chip
                     key={filter.value}
-                    type="button"
+                    variant="outline"
+                    selected={selected}
                     onClick={() => setApplicationFilter(filter.value)}
-                    className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-                      selected
-                        ? "border-brand-primary bg-brand-primary text-white"
-                        : "border-border-default bg-surface text-foreground-muted hover:bg-surface-muted"
-                    }`}
+                    className="whitespace-nowrap"
                   >
-                    {filter.label} <span className="ml-1 opacity-80">{count}</span>
-                  </button>
+                    {filter.label}
+                    <span className="ml-1 tabular-nums opacity-80">{count}</span>
+                  </Chip>
                 );
               })}
             </div>
@@ -457,17 +454,17 @@ export default function JobDetailPage() {
                     <p className="mt-1 text-xs text-foreground-muted">
                       Applied {new Date(applicant.appliedAt).toLocaleDateString()}
                     </p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <span className="rounded-full bg-surface-muted px-2 py-1 text-xs text-foreground-muted">
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      <Chip size="sm" variant="neutral" className="text-foreground-muted">
                         {applicant.candidate.hasAssessment
                           ? "Assessment available"
                           : "No assessment"}
-                      </span>
-                      <span className="rounded-full bg-surface-muted px-2 py-1 text-xs text-foreground-muted">
+                      </Chip>
+                      <Chip size="sm" variant="neutral" className="text-foreground-muted">
                         {applicant.candidate.hasResume
                           ? "Resume available"
                           : "No resume"}
-                      </span>
+                      </Chip>
                     </div>
                   </div>
                   <label className="flex shrink-0 items-center gap-2 text-xs text-foreground-muted">
@@ -529,17 +526,14 @@ function TabButton({
 }
 
 function StatusBadge({ status }: { status?: string }) {
-  const styles =
-    status === "PUBLISHED"
-      ? "bg-success/10 text-success"
-      : status === "CLOSED"
-        ? "bg-foreground-subtle/15 text-foreground-subtle"
-        : "bg-brand-accent/10 text-brand-accent";
-
   return (
-    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${styles}`}>
+    <Chip
+      size="sm"
+      variant={jobStatusChipVariant(status)}
+      className="uppercase tracking-wide"
+    >
       {status ?? "DRAFT"}
-    </span>
+    </Chip>
   );
 }
 

@@ -1,13 +1,13 @@
 "use client";
 
 const linkedInIcon = (
-  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="#0A66C2" aria-hidden>
+  <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="#0A66C2" aria-hidden>
     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
   </svg>
 );
 
 const googleIcon = (
-  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden>
+  <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden>
     <path
       fill="#4285F4"
       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -28,13 +28,14 @@ const googleIcon = (
 );
 
 const baseBtn =
-  "flex items-center justify-center gap-2 py-3 rounded-lg border border-gray-200 bg-gray-100 text-gray-800 font-medium transition hover:bg-gray-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gray-100 w-full";
+  "flex w-full items-center justify-center gap-2 rounded-lg border border-border-default bg-surface py-3 font-medium text-foreground-muted transition hover:border-border-strong hover:bg-surface-subtle hover:text-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-surface disabled:hover:text-foreground-muted";
 
 type SocialLoginOptionsProps = {
   /** `grid`: two columns (desktop). `stack`: full-width rows (mobile). */
   layout?: "grid" | "stack";
 };
 
+/** Placeholder social login buttons (disabled until providers are wired). */
 export function SocialLoginOptions({ layout = "grid" }: SocialLoginOptionsProps) {
   const linkedInLabel = layout === "stack" ? "Continue with LinkedIn" : "LinkedIn";
   const googleLabel = layout === "stack" ? "Continue with Google" : "Google";
@@ -42,12 +43,14 @@ export function SocialLoginOptions({ layout = "grid" }: SocialLoginOptionsProps)
 
   return (
     <>
-      <div className={layout === "stack" ? "relative mt-3 mb-4" : "relative"}>
+      <div className={layout === "stack" ? "relative mb-4 mt-1" : "relative"}>
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
+          <div className="w-full border-t border-border-soft" />
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-3 bg-white text-gray-500 font-medium">{dividerLabel}</span>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-surface-muted px-3 font-semibold tracking-wide text-foreground-subtle">
+            {dividerLabel}
+          </span>
         </div>
       </div>
 

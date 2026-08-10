@@ -2,8 +2,8 @@ import { ButtonHTMLAttributes } from "react";
 import { Spinner } from "./Spinner";
 
 /**
- * Full-width gradient submit button with optional loading spinner.
- * Disables the control while `loading` is true.
+ * Full-width primary CTA with optional loading spinner.
+ * Gradient and focus ring use brand tokens (portal-scoped inside AuthShell).
  */
 export function GradientButton({
   children,
@@ -19,7 +19,7 @@ export function GradientButton({
     <button
       type={type}
       disabled={loading || props.disabled}
-      className={`relative w-full py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-blue-500 to-amber-500 hover:from-blue-600 hover:to-amber-600 cursor-pointer transition shadow-md disabled:opacity-70 disabled:cursor-not-allowed ${className}`}
+      className={`relative w-full cursor-pointer rounded-lg bg-gradient-to-b from-brand-primary-bright to-brand-primary py-3 font-semibold text-on-brand shadow-button transition duration-200 hover:from-brand-primary hover:to-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:translate-y-px disabled:cursor-not-allowed disabled:opacity-70 ${className}`}
       {...props}
     >
       <span className={`flex items-center justify-center gap-2 ${loading ? "invisible" : ""}`}>
@@ -27,7 +27,7 @@ export function GradientButton({
       </span>
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Spinner className="w-5 h-5 text-white" />
+          <Spinner className="h-5 w-5 text-on-brand" />
         </div>
       )}
     </button>

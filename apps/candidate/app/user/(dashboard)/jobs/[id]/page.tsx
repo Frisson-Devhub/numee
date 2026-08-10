@@ -202,6 +202,8 @@ export default function JobDetailPage() {
     job.experienceMin != null || job.experienceMax != null
       ? `${job.experienceMin ?? 0}–${job.experienceMax ?? "∞"} years experience`
       : null;
+  /** When a JD exists it is the source of truth — hide separate role-detail blocks. */
+  const hasJobDescription = Boolean(sanitizeJobRichText(job.description));
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-5">
@@ -264,10 +266,14 @@ export default function JobDetailPage() {
         </section>
       )}
 
-      <JobTextSection title="About this role" content={job.description} featured />
-      <JobTextSection title="Responsibilities" content={job.responsibilities} />
-      <JobTextSection title="Requirements" content={job.requirements} />
-      <JobTextSection title="Benefits" content={job.benefits} />
+      <JobTextSection title="Job description" content={job.description} featured />
+      {!hasJobDescription ? (
+        <>
+          <JobTextSection title="Responsibilities" content={job.responsibilities} />
+          <JobTextSection title="Requirements" content={job.requirements} />
+          <JobTextSection title="Benefits" content={job.benefits} />
+        </>
+      ) : null}
     </div>
   );
 }

@@ -10,4 +10,7 @@ alwaysApply: false
 - Call Nest via `@numee/shared` `ApiCall` (or shared HTTP helpers)
 - Proxy `/api` to Nest in `vite.config` for same-origin cookies in dev
 - Leave `VITE_API_URL` empty when using the Vite proxy
+- Auth: public `/login` route; gate app routes with `RequireAdminAuth` (`GET /api/admin/auth/me`). Sign out via `POST /api/admin/auth/logout` and stay on the admin portal — do not redirect to candidate login
+- Session cookie is `numee_admin_session` (set by Nest admin auth); do not use candidate profile/signout routes for admin chrome
+- Import `@numee/shared/styles/tokens.css` for auth/UI tokens; use shared `AuthShell` for login
 - Do not embed Prisma or Nest server code in this app

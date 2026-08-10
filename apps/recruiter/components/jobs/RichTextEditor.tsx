@@ -256,7 +256,7 @@ export function RichTextEditor({
 
   return (
     <div
-      className={`overflow-hidden rounded-xl border border-border-default bg-surface shadow-sm focus-within:ring-2 focus-within:ring-focus-ring ${
+      className={`overflow-hidden rounded-xl border border-border-default bg-surface shadow-sm transition duration-200 focus-within:border-focus-ring focus-within:shadow-input-focus ${
         disabled ? "opacity-60" : ""
       }`}
     >

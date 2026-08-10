@@ -11,6 +11,7 @@ import { LabeledInput } from "@/components/ui/LabeledInput";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { CheckboxField } from "@/components/ui/CheckboxField";
 import { GradientButton } from "@/components/ui/GradientButton";
+import { AuthCallout } from "@numee/shared/components";
 import { apiRoutes } from "@/constants/api";
 import { ApiCall } from "@/lib/utils";
 import { frontendRoutes } from "@/constants/frontendRoutes";
@@ -25,8 +26,9 @@ type LoginFormProps = {
 };
 
 /**
- * Candidate login. Honors Nest `redirectTo` (e.g. admin), links to recruiter
- * login via `NEXT_PUBLIC_RECRUITER_URL`, and supports a compact mobile layout.
+ * Candidate login. Honors Nest `redirectTo`, links to recruiter login via
+ * `NEXT_PUBLIC_RECRUITER_URL`, and supports a compact mobile layout.
+ * Admin credentials are rejected by the candidate auth API.
  */
 export default function LoginForm({ errorFromQuery, variant = "default" }: LoginFormProps) {
   const router = useRouter();
@@ -80,22 +82,16 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
   };
 
   const formBody = (
-    <>
+    <div className="space-y-6">
       <AuthFormHeading
         title={isMobile ? t("auth.login.titleMobile") : t("auth.login.title")}
         subtitle={isMobile ? t("auth.login.subtitleMobile") : t("auth.login.subtitle")}
       />
 
       {!isMobile && (
-        <div className="flex gap-3 p-4 rounded-lg bg-blue-50 border border-blue-100">
-          <div className="shrink-0 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">!</span>
-          </div>
-          <div className="text-sm">
-            <span className="font-semibold text-blue-900">{t("auth.login.securityTitle")}</span>{" "}
-            <span className="text-blue-800">{t("auth.login.securityMessage")}</span>
-          </div>
-        </div>
+        <AuthCallout title={t("auth.login.securityTitle")}>
+          {t("auth.login.securityMessage")}
+        </AuthCallout>
       )}
 
       <Formik<LoginDataInterface>
@@ -112,11 +108,11 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
               id="email"
               type="email"
               label={isMobile ? t("auth.login.emailMobile") : t("auth.login.email")}
-              placeholder={isMobile ? "demo@example.com" : "admin@numee.com"}
+              placeholder={isMobile ? "demo@example.com" : "you@example.com"}
               value={values.email}
               onChange={(e) => setFieldValue("email", e.target.value)}
             />
-            <ErrorMessage name="email" component="div" className="text-red-600 text-sm" />
+            <ErrorMessage name="email" component="div" className="text-danger text-sm" />
             <PasswordInput
               id="password"
               label={t("auth.login.password")}
@@ -124,7 +120,7 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
               value={values.password}
               onChange={(e) => setFieldValue("password", e.target.value)}
             />
-            <ErrorMessage name="password" component="div" className="text-red-600 text-sm" />
+            <ErrorMessage name="password" component="div" className="text-danger text-sm" />
             <div className="flex items-center justify-between gap-3">
               <CheckboxField
                 id="remember"
@@ -134,12 +130,12 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
               />
               <Link
                 href="/user/forgot-password"
-                className="text-sm font-medium text-blue-600 hover:text-blue-700 shrink-0"
+                className="text-sm font-medium text-brand-primary hover:text-brand-primary-bright shrink-0"
               >
                 {isMobile ? t("auth.login.forgotPasswordMobile") : t("auth.login.forgotPassword")}
               </Link>
             </div>
-            {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+            {error && <p className="text-danger text-sm font-medium">{error}</p>}
             <GradientButton disabled={isSubmitting}>
               {isSubmitting
                 ? isMobile
@@ -155,24 +151,27 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
 
       <SocialLoginOptions layout={isMobile ? "stack" : "grid"} />
       {!isMobile && (
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-sm text-foreground-subtle">
           Don&apos;t have an account?{" "}
-          <Link href="/user/signup" className="font-medium text-blue-600 hover:text-blue-700">
+          <Link
+            href="/user/signup"
+            className="font-medium text-brand-primary transition hover:text-brand-primary-bright"
+          >
             Sign up
           </Link>
         </p>
       )}
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-foreground-subtle">
         Are you a recruiter?{" "}
         <a
           href={recruiterLoginUrl}
-          className="font-medium text-blue-600 hover:text-blue-700"
+          className="font-medium text-brand-primary transition hover:text-brand-primary-bright"
         >
           Sign in to the Recruiter Portal
         </a>
         . Admin credentials are not accepted here.
       </p>
-    </>
+    </div>
   );
 
   if (isMobile) {

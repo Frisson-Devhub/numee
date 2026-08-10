@@ -9,6 +9,7 @@ alwaysApply: false
 - Organize features as Nest modules (controllers, services, DTOs)
 - Validate inputs with DTOs / class-validator (or project equivalent)
 - **Prisma only here** — schema, client, and migrations stay in `apps/api`
-- Auth: cookie + JWT session pattern; issue/verify sessions in the API
-- Protect admin routes: `ADMIN` guards on `/api/admin/*`
+- Auth: **portal-scoped** httpOnly cookies + JWT (`numee_candidate_session` / `numee_recruiter_session` / `numee_admin_session`). Use `setPortalSessionCookie` / `clearPortalSessionCookie`; clear legacy `session` on login/logout.
+- `SessionGuard` picks the cookie from the request path (`/api/admin/*`, `/api/recruiter/*`, else candidate)
+- Protect admin routes: `ADMIN` guards on `/api/admin/*`; admin login is `POST /api/admin/auth/login` (not candidate auth)
 - Frontends call this API; do not put business API logic in Next Route Handlers

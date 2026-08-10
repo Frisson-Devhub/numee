@@ -1,16 +1,25 @@
 @import "tailwindcss";
+@import "@numee/shared/styles/tokens.css";
+
+/* Scan shared UI so AuthShell / shared component utilities are generated */
+@source "../../../packages/shared/src";
 
 :root {
-  --background: #f9fafb;
-  --foreground: #171717;
+  /* Light product chrome — do not flip ink under OS dark preference */
+  color-scheme: light;
+  --background: var(--surface-muted);
+  --font-plus-jakarta: "Plus Jakarta Sans";
+}
+
+@theme inline {
+  --color-background: var(--background);
 }
 
 body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: var(--font-sans);
 }
 
 #root {
