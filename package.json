@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "sh -c 'turbo run dev --filter=@numee/candidate --filter=@numee/api --filter=@numee/admin --filter=@numee/recruiter'",
     "build": "turbo run build",
+    "start": "sh -c 'turbo run start --filter=@numee/candidate --filter=@numee/api --filter=@numee/admin --filter=@numee/recruiter'",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "db:generate": "pnpm --filter @numee/api db:generate",

@@ -213,15 +213,48 @@ export class CandidateEmbeddingsService {
         );
         if (retrieved?.vector?.length) return retrieved.vector;
       } catch (err) {
-        if (err instanceof HttpException) throw err;
         console.warn(
           `Candidate vector retrieve failed for ${userId}, re-embedding:`,
-          (err as Error).message,
+          err instanceof HttpException
+            ? err.message
+            : (err as Error).message,
         );
       }
     }
 
     return this.embedCandidateNow(userId);
+  }
+
+  /**
+   * Assessment must exist before matching. Resume is optional and never required.
+   */
+  async assertHasAssessment(userId: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        assessments: {
+          select: {
+            assessmentQuestionAnswers: true,
+            assessmentData: true,
+          },
+        },
+      },
+    });
+    if (!user) {
+      throw new HttpException({ error: "User not found" }, 404);
+    }
+    const hasAssessmentSignal = user.assessments.some(
+      (a) =>
+        (Array.isArray(a.assessmentQuestionAnswers) &&
+          a.assessmentQuestionAnswers.length > 0) ||
+        a.assessmentData != null,
+    );
+    if (!hasAssessmentSignal) {
+      throw new HttpException(
+        { error: "Complete your assessment before matching jobs" },
+        400,
+      );
+    }
   }
 
   /** Synchronously rebuild candidate text → OpenAI embedding → Qdrant + DB. */
@@ -268,8 +301,6 @@ export class CandidateEmbeddingsService {
       where: { id: userId },
       select: {
         id: true,
-        resumeUrl: true,
-        linkedInUrl: true,
         assessments: {
           select: {
             assessmentId: true,
@@ -280,24 +311,9 @@ export class CandidateEmbeddingsService {
         },
       },
     });
+    await this.assertHasAssessment(userId);
     if (!user) {
       throw new HttpException({ error: "User not found" }, 404);
-    }
-
-    const hasAssessmentSignal = user.assessments.some(
-      (a) =>
-        (Array.isArray(a.assessmentQuestionAnswers) &&
-          a.assessmentQuestionAnswers.length > 0) ||
-        a.assessmentData != null,
-    );
-    if (!hasAssessmentSignal && !user.resumeUrl && !user.linkedInUrl) {
-      throw new HttpException(
-        {
-          error:
-            "Complete your assessment or add a resume/LinkedIn before matching jobs",
-        },
-        400,
-      );
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
@@ -392,7 +408,7 @@ export class CandidateEmbeddingsProcessor extends WorkerHost {
     try {
       await this.embeddings.embedCandidateNow(job.data.userId);
     } catch (err) {
-      // Don't retry client errors (e.g. missing assessment/resume).
+      // Don't retry client errors (e.g. missing assessment signal).
       if (err instanceof HttpException && err.getStatus() < 500) return;
       throw err;
     }

@@ -23,7 +23,7 @@ export const apiRoutes = {
     jobs: "/api/user/jobs",
     job: (id: string) => `/api/user/jobs/${id}`,
     jobApply: (id: string) => `/api/user/jobs/${id}/apply`,
-    applications: "/api/user/applications",
+    applications: "/api/user/jobs/applications",
     jobsMatch: "/api/user/jobs/match",
     jobsIndustries: "/api/user/jobs/industries",
   },

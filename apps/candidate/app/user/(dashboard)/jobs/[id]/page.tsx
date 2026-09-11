@@ -12,12 +12,19 @@ import {
   Clock3,
   DollarSign,
   MapPin,
+  Send,
 } from "lucide-react";
 import { apiRoutes } from "@/constants/api";
 import { DASHBOARD_CARD_CLASS } from "@/constants/constants";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { Spinner } from "@/components/ui/Spinner";
-import { getMatchPresentation } from "@/lib/job-match";
+import { JobMatchBadge } from "@/components/jobs/JobMatchBadge";
+import { JobMatchExplain } from "@/components/jobs/JobMatchExplain";
+import {
+  getMatchPresentation,
+  readStashedJobMatchExplain,
+  type JobMatchExplainFields,
+} from "@/lib/job-match";
 import { ApiCall } from "@/lib/utils";
 
 type JobDetail = {
@@ -106,8 +113,9 @@ function jobSalary(job: JobDetail): string | null {
 }
 
 /**
- * Job detail + apply. Optional `?match=` query carries the raw Qdrant score for
- * the badge (not re-fetched here).
+ * Job detail + apply. Optional `?match=` query carries the list match score
+ * (LLM 0–100 or legacy cosine) for the badge. Explain fields are read from
+ * sessionStorage when navigated from AI Match results.
  */
 export default function JobDetailPage() {
   const params = useParams<{ id: string }>();
@@ -118,11 +126,18 @@ export default function JobDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
+  const [matchExplain, setMatchExplain] = useState<JobMatchExplainFields | null>(
+    null,
+  );
 
   const match = useMemo(() => {
     const rawScore = searchParams.get("match");
-    return rawScore === null ? null : getMatchPresentation(Number(rawScore));
-  }, [searchParams]);
+    if (rawScore !== null) {
+      const fromQuery = getMatchPresentation(Number(rawScore));
+      if (fromQuery) return fromQuery;
+    }
+    return getMatchPresentation(matchExplain?.score ?? null);
+  }, [searchParams, matchExplain?.score]);
 
   const loadJob = useCallback(async () => {
     if (!jobId) return;
@@ -143,6 +158,11 @@ export default function JobDetailPage() {
   useEffect(() => {
     void loadJob();
   }, [loadJob]);
+
+  useEffect(() => {
+    if (!jobId) return;
+    setMatchExplain(readStashedJobMatchExplain(jobId));
+  }, [jobId]);
 
   const apply = async () => {
     if (!job || job.hasApplied) return;
@@ -215,45 +235,118 @@ export default function JobDetailPage() {
       <section className={DASHBOARD_CARD_CLASS}>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-semibold text-gray-900">{job.title}</h1>
-            </div>
+            <h1 className="text-2xl font-semibold text-gray-900">{job.title}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
-              <span className="inline-flex items-center gap-1.5"><Building2 className="h-4 w-4" />{job.company.name}</span>
-              {(job.location || job.workMode) && <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />{[job.location, job.workMode].filter(Boolean).join(" · ")}</span>}
-              {job.employmentType && <span className="inline-flex items-center gap-1.5"><Briefcase className="h-4 w-4" />{job.employmentType}</span>}
+              <span className="inline-flex items-center gap-1.5">
+                <Building2 className="h-4 w-4" />
+                {job.company.name}
+              </span>
+              {(job.location || job.workMode) && (
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4" />
+                  {[job.location, job.workMode].filter(Boolean).join(" · ")}
+                </span>
+              )}
+              {job.employmentType && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Briefcase className="h-4 w-4" />
+                  {job.employmentType}
+                </span>
+              )}
             </div>
           </div>
-          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:items-end">
+          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:min-w-48 sm:items-stretch">
             {match && (
-              <div
-                className={`w-full rounded-lg border px-3 py-2 text-left sm:w-auto sm:min-w-36 sm:text-right ${match.badgeClassName}`}
-                aria-label={`${match.label}: ${match.percent}% match`}
-              >
-                <p className="text-xs font-medium">AI Match</p>
-                <p className="text-2xl font-bold leading-tight">
-                  {match.percent}%
-                </p>
-                <p className="text-xs font-medium">{match.label}</p>
+              <div className="flex justify-start sm:justify-end">
+                <JobMatchBadge match={match} size="prominent" />
               </div>
             )}
-            <GradientButton className="w-full sm:w-auto" loading={applying} disabled={job.hasApplied} onClick={() => void apply()}>
-              {job.hasApplied ? <><Check className="h-4 w-4" />Applied{job.applicationStatus ? ` · ${job.applicationStatus}` : ""}</> : "Apply"}
-            </GradientButton>
-            {applyError && <p className="mt-2 text-xs font-medium text-red-700">{applyError}</p>}
+            {job.hasApplied ? (
+              <div
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-5 text-sm font-semibold text-emerald-800"
+                role="status"
+                aria-label={
+                  job.applicationStatus
+                    ? `Already applied · ${job.applicationStatus}`
+                    : "Already applied"
+                }
+              >
+                <Check className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="truncate">
+                  Applied
+                  {job.applicationStatus ? ` · ${job.applicationStatus}` : ""}
+                </span>
+              </div>
+            ) : (
+              <GradientButton
+                type="button"
+                className="h-11 w-full px-6 py-0 text-sm"
+                loading={applying}
+                onClick={() => void apply()}
+                aria-label={applying ? "Submitting application" : "Apply to this job"}
+              >
+                <Send className="h-4 w-4 shrink-0" aria-hidden />
+                {applying ? "Applying…" : "Apply"}
+              </GradientButton>
+            )}
+            {applyError && (
+              <p className="text-xs font-medium text-red-700 sm:text-right">
+                {applyError}
+              </p>
+            )}
           </div>
         </div>
       </section>
 
+      {matchExplain && (
+        <JobMatchExplain fields={matchExplain} match={match} />
+      )}
+
       <section className={DASHBOARD_CARD_CLASS}>
         <h2 className="text-lg font-semibold text-gray-900">Job overview</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {job.department && <Detail icon={<Briefcase className="h-4 w-4" />} label="Department" value={job.department} />}
-          {experience && <Detail icon={<Clock3 className="h-4 w-4" />} label="Experience" value={experience} />}
-          {salary && <Detail icon={<DollarSign className="h-4 w-4" />} label="Compensation" value={salary} />}
-          {job.noticePeriod && <Detail icon={<Clock3 className="h-4 w-4" />} label="Notice period" value={job.noticePeriod} />}
-          {job.industry && <Detail icon={<Building2 className="h-4 w-4" />} label="Industry" value={job.industry.name} />}
-          {job.jobRole && <Detail icon={<Briefcase className="h-4 w-4" />} label="Role" value={job.jobRole.name} />}
+          {job.department && (
+            <Detail
+              icon={<Briefcase className="h-4 w-4" />}
+              label="Department"
+              value={job.department}
+            />
+          )}
+          {experience && (
+            <Detail
+              icon={<Clock3 className="h-4 w-4" />}
+              label="Experience"
+              value={experience}
+            />
+          )}
+          {salary && (
+            <Detail
+              icon={<DollarSign className="h-4 w-4" />}
+              label="Compensation"
+              value={salary}
+            />
+          )}
+          {job.noticePeriod && (
+            <Detail
+              icon={<Clock3 className="h-4 w-4" />}
+              label="Notice period"
+              value={job.noticePeriod}
+            />
+          )}
+          {job.industry && (
+            <Detail
+              icon={<Building2 className="h-4 w-4" />}
+              label="Industry"
+              value={job.industry.name}
+            />
+          )}
+          {job.jobRole && (
+            <Detail
+              icon={<Briefcase className="h-4 w-4" />}
+              label="Role"
+              value={job.jobRole.name}
+            />
+          )}
         </div>
       </section>
 
@@ -261,7 +354,19 @@ export default function JobDetailPage() {
         <section className={DASHBOARD_CARD_CLASS}>
           <h2 className="text-lg font-semibold text-gray-900">Skills</h2>
           <div className="mt-3 flex flex-wrap gap-2">
-            {job.skills.map((skill) => <span key={skill.id} className={`rounded-full px-3 py-1 text-sm ${skill.required ? "bg-blue-50 font-medium text-[#205ec5]" : "bg-gray-100 text-gray-700"}`}>{skill.name}{skill.required ? " · Required" : ""}</span>)}
+            {job.skills.map((skill) => (
+              <span
+                key={skill.id}
+                className={`rounded-full px-3 py-1 text-sm ${
+                  skill.required
+                    ? "bg-blue-50 font-medium text-[#205ec5]"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                {skill.name}
+                {skill.required ? " · Required" : ""}
+              </span>
+            ))}
           </div>
         </section>
       )}
@@ -278,8 +383,24 @@ export default function JobDetailPage() {
   );
 }
 
-function Detail({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return <div className="flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-sm"><span className="mt-0.5 text-gray-400">{icon}</span><div><p className="text-xs text-gray-500">{label}</p><p className="mt-0.5 font-medium text-gray-800">{value}</p></div></div>;
+function Detail({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-sm">
+      <span className="mt-0.5 text-gray-400">{icon}</span>
+      <div>
+        <p className="text-xs text-gray-500">{label}</p>
+        <p className="mt-0.5 font-medium text-gray-800">{value}</p>
+      </div>
+    </div>
+  );
 }
 
 function JobTextSection({
@@ -299,7 +420,13 @@ function JobTextSection({
   return (
     <section className={DASHBOARD_CARD_CLASS}>
       <div className="max-w-3xl">
-        <h2 className={featured ? "text-xl font-semibold text-gray-900" : "text-lg font-semibold text-gray-900"}>
+        <h2
+          className={
+            featured
+              ? "text-xl font-semibold text-gray-900"
+              : "text-lg font-semibold text-gray-900"
+          }
+        >
           {title}
         </h2>
         {containsHtml ? (
@@ -308,7 +435,9 @@ function JobTextSection({
             dangerouslySetInnerHTML={{ __html: richText }}
           />
         ) : (
-          <p className="mt-4 whitespace-pre-line text-[15px] leading-7 text-gray-700">{richText}</p>
+          <p className="mt-4 whitespace-pre-line text-[15px] leading-7 text-gray-700">
+            {richText}
+          </p>
         )}
       </div>
     </section>

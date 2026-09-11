@@ -6,6 +6,7 @@ import {
   CandidateEmbeddingsService,
 } from "./candidate-embeddings.service";
 import { CandidateJobMatchService } from "./candidate-job-match.service";
+import { CandidateJobScoreService } from "./candidate-job-score.service";
 import { CandidateJobsController } from "./candidate-jobs.controller";
 
 @Module({
@@ -18,6 +19,7 @@ import { CandidateJobsController } from "./candidate-jobs.controller";
   providers: [
     CandidateEmbeddingsService,
     CandidateEmbeddingsProcessor,
+    CandidateJobScoreService,
     CandidateJobMatchService,
   ],
   exports: [CandidateEmbeddingsService, CandidateJobMatchService],

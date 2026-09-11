@@ -28,7 +28,7 @@ export class CandidateJobsController {
   ) {}
 
   /**
-   * Assessment embedding → JD vector match → ranked job suggestions.
+   * Assessment embedding → JD vector recall → batched 3-layer LLM rerank.
    * Optional query blends keyword signal into the search vector.
    */
   @Post("match")

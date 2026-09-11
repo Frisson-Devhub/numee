@@ -51,8 +51,8 @@ function wrapLabel(str: string, maxChars = 18) {
 
 /**
  * Top-3 role match bars. `match_score` is a 0–1 fraction (×100 for display),
- * unlike `getMatchPresentation` which expects raw cosine similarity. Falls back
- * to placeholder data when unset.
+ * unlike `getMatchPresentation` which accepts LLM 0–100 or legacy cosine.
+ * Falls back to placeholder data when unset.
  */
 export function MatchScoreChart({ jobs: propJobs }: MatchScoreChartProps) {
     const data = propJobs?.length

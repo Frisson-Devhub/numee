@@ -1,14 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Briefcase, Building2, MapPin, Search } from "lucide-react";
+import { Briefcase, Building2, MapPin, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { apiRoutes } from "@/constants/api";
 import { DASHBOARD_CARD_CLASS } from "@/constants/constants";
 import { ApiCall } from "@/lib/utils";
-import { getMatchPresentation } from "@/lib/job-match";
+import {
+  getMatchPresentation,
+  stashJobMatchExplain,
+  type JobMatchExplainFields,
+} from "@/lib/job-match";
 import { Spinner } from "@/components/ui/Spinner";
 import { GradientButton } from "@/components/ui/GradientButton";
+import { JobMatchBadge } from "@/components/jobs/JobMatchBadge";
+import { JobMatchCardPreview } from "@/components/jobs/JobMatchExplain";
 
 type JobMatch = {
   jobId: string;
@@ -24,7 +30,7 @@ type JobMatch = {
   workMode: string | null;
   snippet: string | null;
   status: string;
-};
+} & JobMatchExplainFields;
 
 type BrowseJob = Omit<JobMatch, "score">;
 
@@ -85,6 +91,21 @@ function JobMeta({
           {[location, workMode].filter(Boolean).join(" · ")}
         </span>
       )}
+    </div>
+  );
+}
+
+function EmptyState({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="mt-5 rounded-lg border border-dashed border-gray-200 px-5 py-8 text-center">
+      <p className="font-medium text-gray-800">{title}</p>
+      <p className="mt-1 text-sm text-gray-500">{description}</p>
     </div>
   );
 }
@@ -208,17 +229,17 @@ export default function JobsPage() {
           <div className="min-w-0 flex-1">
             <h1 className="text-xl font-semibold text-gray-900">Jobs</h1>
             <p className="mt-1 text-sm text-gray-500">
-              We embed skills and roles from your assessment, match them to job
-              embeddings, and show the closest open roles.
+              Find roles that fit your assessment and profile — ranked by AI
+              match score with a short explanation for each result.
             </p>
           </div>
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-stretch">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
-              className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900 outline-none ring-[#205ec5] placeholder:text-gray-400 focus:ring-2"
+              className="h-11 w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900 outline-none ring-[#205ec5] placeholder:text-gray-400 focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -226,15 +247,20 @@ export default function JobsPage() {
               }}
               placeholder="Optional: e.g. backend engineer, fintech"
               disabled={matching}
+              aria-label="Optional keywords for AI job match"
             />
           </div>
           <GradientButton
             type="button"
             loading={matching}
             onClick={() => void findMatches()}
-            className="sm:w-auto"
+            className="h-11 shrink-0 px-6 py-0 text-sm sm:w-auto sm:min-w-48"
+            aria-label={
+              matching ? "Finding AI matches" : "Find AI matches for your profile"
+            }
           >
-            Find AI Match
+            <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+            {matching ? "Finding matches…" : "Find AI Match"}
           </GradientButton>
         </div>
 
@@ -249,34 +275,39 @@ export default function JobsPage() {
               <p className="font-medium">
                 {matchStage === "embedding"
                   ? "Creating your assessment embedding…"
-                  : "Matching against job embeddings…"}
+                  : "Scoring your top matches…"}
               </p>
               <p className="mt-0.5 text-xs text-blue-700">
-                We&apos;ll return the closest open roles by vector similarity.
+                This usually takes a few seconds.
               </p>
             </div>
           </div>
         )}
 
         {matchError && (
-          <p className="mt-4 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-            {matchError}
-          </p>
+          <div className="mt-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p className="font-medium">{matchError}</p>
+          </div>
         )}
 
         {!matching && matches && matches.length === 0 && !matchError && (
-          <p className="mt-4 text-sm text-gray-500">
-            No matching published jobs yet. Complete your assessment, add a
-            resume, or try a different keyword.
-          </p>
+          <EmptyState
+            title="No matches yet"
+            description="Complete your assessment, add a resume, or try a different keyword."
+          />
         )}
 
         {!matching && matches && matches.length > 0 && (
-          <>
-            <p className="mt-5 text-sm font-medium text-gray-700">
-              Your top {matches.length} AI matches
-            </p>
-            <ul className="mt-2 divide-y divide-gray-100 rounded-lg border border-gray-100">
+          <div className="mt-6">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-sm font-semibold text-gray-900">
+                Your top AI matches
+              </h2>
+              <p className="text-xs text-gray-500">
+                {matches.length} role{matches.length === 1 ? "" : "s"}
+              </p>
+            </div>
+            <ul className="mt-3 divide-y divide-gray-100 rounded-lg border border-gray-100">
               {matches.map((m) => {
                 const match = getMatchPresentation(m.score);
                 const href = match
@@ -287,11 +318,28 @@ export default function JobsPage() {
                   <li key={m.jobId}>
                     <Link
                       href={href}
-                      className="block px-4 py-3 transition-colors hover:bg-blue-50/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#205ec5]"
+                      onClick={() => {
+                        stashJobMatchExplain(m.jobId, {
+                          score: m.score,
+                          matchLevel: m.matchLevel,
+                          semanticScore: m.semanticScore,
+                          assessmentScore: m.assessmentScore,
+                          preferenceScore: m.preferenceScore,
+                          matchingSkills: m.matchingSkills,
+                          missingSkills: m.missingSkills,
+                          strengths: m.strengths,
+                          concerns: m.concerns,
+                          summary: m.summary,
+                          recommendation: m.recommendation,
+                        });
+                      }}
+                      className="block px-4 py-4 transition-colors hover:bg-blue-50/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#205ec5]"
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="font-medium text-gray-900">{m.title}</p>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900">
+                            {m.title}
+                          </p>
                           <JobMeta
                             companyName={m.companyName}
                             industryName={m.industryName}
@@ -299,24 +347,16 @@ export default function JobsPage() {
                             location={m.location}
                             workMode={m.workMode}
                           />
-                          {m.snippet && (
-                            <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                              {m.snippet}
-                            </p>
-                          )}
+                          <JobMatchCardPreview
+                            summary={m.summary}
+                            snippet={m.snippet}
+                            strengths={m.strengths}
+                          />
                         </div>
                         {match ? (
-                          <span
-                            className={`shrink-0 rounded-full border px-2.5 py-1 text-right text-xs font-semibold ${match.badgeClassName}`}
-                            aria-label={`${match.label}: ${match.percent}% match`}
-                          >
-                            <span className="block">Match {match.percent}%</span>
-                            <span className="block text-[10px] font-medium">
-                              {match.label}
-                            </span>
-                          </span>
+                          <JobMatchBadge match={match} />
                         ) : (
-                          <span className="shrink-0 text-right text-xs font-medium text-gray-500">
+                          <span className="shrink-0 pt-1 text-right text-xs font-medium text-gray-500">
                             Match unavailable
                           </span>
                         )}
@@ -326,7 +366,7 @@ export default function JobsPage() {
                 );
               })}
             </ul>
-          </>
+          </div>
         )}
       </section>
 
@@ -365,16 +405,20 @@ export default function JobsPage() {
         )}
 
         {browseError && (
-          <p className="mt-4 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-            {browseError}
-          </p>
+          <div className="mt-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p className="font-medium">{browseError}</p>
+          </div>
         )}
 
         {!browseLoading && !browseError && browseJobs.length === 0 && (
-          <p className="mt-4 text-sm text-gray-500">
-            No published jobs
-            {industryId ? " in this industry" : ""} yet.
-          </p>
+          <EmptyState
+            title="No published jobs"
+            description={
+              industryId
+                ? "Try another industry, or clear the filter."
+                : "Check back soon for new open roles."
+            }
+          />
         )}
 
         {!browseLoading && browseJobs.length > 0 && (
@@ -383,9 +427,9 @@ export default function JobsPage() {
               <li key={job.jobId}>
                 <Link
                   href={`/user/jobs/${job.jobId}`}
-                  className="block px-4 py-3 transition-colors hover:bg-blue-50/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#205ec5]"
+                  className="block px-4 py-4 transition-colors hover:bg-blue-50/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#205ec5]"
                 >
-                  <p className="font-medium text-gray-900">{job.title}</p>
+                  <p className="font-semibold text-gray-900">{job.title}</p>
                   <JobMeta
                     companyName={job.companyName}
                     industryName={job.industryName}
@@ -394,12 +438,12 @@ export default function JobsPage() {
                     workMode={job.workMode}
                   />
                   {job.snippet && (
-                    <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                    <p className="mt-2.5 text-sm leading-5 text-gray-600 line-clamp-2">
                       {job.snippet}
                     </p>
                   )}
-                  <p className="mt-2 text-xs font-medium text-gray-500">
-                    Run AI Match to see your fit
+                  <p className="mt-2 text-xs text-gray-500">
+                    Run AI Match above to see your fit for this role
                   </p>
                 </Link>
               </li>

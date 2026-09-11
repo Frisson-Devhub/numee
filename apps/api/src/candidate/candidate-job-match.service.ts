@@ -7,6 +7,14 @@ import {
 } from "../qdrant/qdrant.module";
 import { EMBEDDING_MODEL } from "../recruiter/embeddings/embeddings.service";
 import { CandidateEmbeddingsService } from "./candidate-embeddings.service";
+import {
+  buildCompactAssessment,
+  CandidateJobScoreService,
+  extractCompactPreferences,
+  MATCH_SCORE_TOP_K,
+  type CandidateJobLayerScore,
+  type CompactJobForScore,
+} from "./candidate-job-score.service";
 
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 20;
@@ -16,6 +24,7 @@ const BROWSE_MAX_LIMIT = 50;
 
 export type CandidateJobMatchResult = {
   jobId: string;
+  /** LLM final_score (0–100), or cosine mapped to 0–100 on fail-soft. */
   score: number;
   title: string;
   companyId: string;
@@ -28,6 +37,63 @@ export type CandidateJobMatchResult = {
   workMode: string | null;
   snippet: string | null;
   status: string;
+  matchLevel?: string;
+  semanticScore?: number;
+  assessmentScore?: number;
+  preferenceScore?: number;
+  matchingSkills?: string[];
+  missingSkills?: string[];
+  strengths?: string[];
+  concerns?: string[];
+  summary?: string;
+  recommendation?: string;
+};
+
+type JobRowForMatch = {
+  id: string;
+  title: string;
+  companyId: string;
+  industryId: string | null;
+  jobRoleId: string | null;
+  location: string | null;
+  workMode: string | null;
+  employmentType: string | null;
+  noticePeriod: string | null;
+  salaryMin: number | null;
+  salaryMax: number | null;
+  salaryCurrency: string | null;
+  description: string | null;
+  requirements: string | null;
+  status: string;
+  company: { name: string };
+  industry: { name: string } | null;
+  jobRole: { name: string } | null;
+  skills: Array<{ name: string; required: boolean }>;
+};
+
+const JOB_MATCH_SELECT = {
+  id: true,
+  title: true,
+  companyId: true,
+  industryId: true,
+  jobRoleId: true,
+  location: true,
+  workMode: true,
+  employmentType: true,
+  noticePeriod: true,
+  salaryMin: true,
+  salaryMax: true,
+  salaryCurrency: true,
+  description: true,
+  requirements: true,
+  status: true,
+  company: { select: { name: true } },
+  industry: { select: { name: true } },
+  jobRole: { select: { name: true } },
+  skills: {
+    select: { name: true, required: true },
+    orderBy: { name: "asc" as const },
+  },
 };
 
 @Injectable()
@@ -36,14 +102,14 @@ export class CandidateJobMatchService {
     private readonly prisma: PrismaService,
     private readonly qdrant: QdrantService,
     private readonly candidateEmbeddings: CandidateEmbeddingsService,
+    private readonly jobScore: CandidateJobScoreService,
   ) {}
 
   /**
-   * Assessment → JD vector match:
-   * 1) Create/load candidate embedding from assessment (skills, roles, location)
-   * 2) Vector-search published job embeddings
-   * 3) Hydrate and return ranked job suggestions
-   * Optional `query` embeds as an extra keyword signal for this search only.
+   * Assessment → JD recall → batched 3-layer LLM rerank (top K).
+   * Prefers Qdrant vector search; if Qdrant is unreachable (Cloud 404, local
+   * down), shortlists published jobs from Postgres by assessment overlap.
+   * On LLM failure, fail soft with similarity mapped to 0–100.
    */
   async matchJobsForCandidate(
     userId: string,
@@ -54,44 +120,57 @@ export class CandidateJobMatchService {
     embeddingStatus: string;
   }> {
     const topN = Math.min(Math.max(1, limit || DEFAULT_LIMIT), MAX_LIMIT);
+    const scoreK = Math.min(topN, MATCH_SCORE_TOP_K);
 
-    const candidateVector = await this.candidateEmbeddings.ensureCandidateVector(
-      userId,
-    );
+    await this.candidateEmbeddings.assertHasAssessment(userId);
 
-    const q = query?.trim() || "";
-    let searchVector = candidateVector;
-    if (q) {
-      // Blend optional keywords into a one-off query vector for this match.
-      searchVector = await this.withTimeout(
-        this.embedQuery(`Skills: ${q}\nJob role: ${q}`),
-        "Timed out creating query embedding (check OPENAI_API_KEY / network)",
-      );
-      // Average with assessment vector so results stay profile-grounded.
-      searchVector = averageVectors(candidateVector, searchVector);
+    let orderedJobs: Array<{ row: JobRowForMatch; cosine: number }> = [];
+    const qdrantReady = await this.qdrant.tryReady();
+    if (qdrantReady) {
+      try {
+        orderedJobs = await this.vectorShortlist(userId, query, scoreK);
+      } catch (err) {
+        if (err instanceof HttpException && err.getStatus() < 500) {
+          throw err;
+        }
+        console.warn(
+          "Qdrant job search failed; scoring published jobs from the database:",
+          err instanceof HttpException ? err.message : (err as Error).message,
+        );
+      }
     }
 
-    const jobHits = await this.withTimeout(
-      this.qdrant.search(QDRANT_JOBS_COLLECTION, searchVector, topN * 5),
-      "Timed out searching job vectors (is Qdrant running?)",
-    );
+    if (!orderedJobs.length) {
+      orderedJobs = await this.fallbackPublishedShortlist(
+        userId,
+        query,
+        scoreK,
+      );
+    }
 
-    const published = jobHits.filter((h) => {
-      const status = h.payload.status;
-      return status === undefined || status === null || status === "PUBLISHED";
-    });
-
-    const scored = published.slice(0, topN * 2);
-    const matches = await this.hydrateMatches(scored, topN);
     const embedding = await this.prisma.candidateEmbedding.findUnique({
       where: { userId },
       select: { status: true },
     });
+    const embeddingStatus = embedding?.status ?? "READY";
 
-    return {
-      matches,
-      embeddingStatus: embedding?.status ?? "READY",
-    };
+    if (!orderedJobs.length) {
+      return { matches: [], embeddingStatus };
+    }
+
+    let matches: CandidateJobMatchResult[];
+    try {
+      matches = await this.scoreAndHydrate(userId, orderedJobs);
+    } catch (err) {
+      console.error("Candidate job LLM scoring failed; using vector ranks:", err);
+      matches = orderedJobs.map(({ row, cosine }) =>
+        hydrateFromRow(row, {
+          score: cosineToPercent(cosine),
+        }),
+      );
+    }
+
+    return { matches, embeddingStatus };
   }
 
   /** Active industries for candidate browse filters. */
@@ -183,58 +262,162 @@ export class CandidateJobMatchService {
     };
   }
 
-  private async hydrateMatches(
-    scored: Array<{ score: number; payload: Record<string, unknown> }>,
-    topN: number,
-  ): Promise<CandidateJobMatchResult[]> {
+  /**
+   * Qdrant recall: candidate (and optional keyword) vector → published jobs.
+   */
+  private async vectorShortlist(
+    userId: string,
+    query: string | undefined,
+    scoreK: number,
+  ): Promise<Array<{ row: JobRowForMatch; cosine: number }>> {
+    const candidateVector =
+      await this.candidateEmbeddings.ensureCandidateVector(userId);
+
+    const q = query?.trim() || "";
+    let searchVector = candidateVector;
+    if (q) {
+      searchVector = await this.withTimeout(
+        this.embedQuery(`Skills: ${q}\nJob role: ${q}`),
+        "Timed out creating query embedding (check OPENAI_API_KEY / network)",
+      );
+      searchVector = averageVectors(candidateVector, searchVector);
+    }
+
+    const jobHits = await this.withTimeout(
+      this.qdrant.search(QDRANT_JOBS_COLLECTION, searchVector, scoreK * 5),
+      "Timed out searching job vectors (is Qdrant running?)",
+    );
+
+    const shortlist = jobHits.filter((h) => {
+      const status = h.payload.status;
+      return status === undefined || status === null || status === "PUBLISHED";
+    });
     const jobIds = uniqueStrings(
-      scored.map((h) => String(h.payload.jobId ?? "")),
+      shortlist.map((h) => String(h.payload.jobId ?? "")),
     );
     const jobs = jobIds.length
       ? await this.prisma.job.findMany({
           where: { id: { in: jobIds }, status: "PUBLISHED" },
-          select: {
-            id: true,
-            title: true,
-            companyId: true,
-            industryId: true,
-            jobRoleId: true,
-            location: true,
-            workMode: true,
-            description: true,
-            requirements: true,
-            status: true,
-            company: { select: { name: true } },
-            industry: { select: { name: true } },
-            jobRole: { select: { name: true } },
-          },
+          select: JOB_MATCH_SELECT,
         })
       : [];
     const byId = new Map(jobs.map((j) => [j.id, j]));
 
-    const matches: CandidateJobMatchResult[] = [];
-    for (const hit of scored) {
+    const orderedJobs: Array<{ row: JobRowForMatch; cosine: number }> = [];
+    for (const hit of shortlist) {
       const jobId = String(hit.payload.jobId ?? "");
       const row = byId.get(jobId);
       if (!row) continue;
-      matches.push({
-        jobId: row.id,
-        score: hit.score,
-        title: row.title,
-        companyId: row.companyId,
-        companyName: row.company.name,
-        industryId: row.industryId,
-        industryName: row.industry?.name ?? null,
-        jobRoleId: row.jobRoleId,
-        jobRoleName: row.jobRole?.name ?? null,
-        location: row.location,
-        workMode: row.workMode,
-        snippet: makeSnippet(row.description || row.requirements),
-        status: row.status,
-      });
-      if (matches.length >= topN) break;
+      orderedJobs.push({ row, cosine: hit.score });
+      if (orderedJobs.length >= scoreK) break;
     }
-    return matches;
+    return orderedJobs;
+  }
+
+  /**
+   * When Qdrant Cloud/local is down, shortlist published jobs by assessment
+   * overlap (and optional keywords) so Find AI Match still returns scores.
+   */
+  private async fallbackPublishedShortlist(
+    userId: string,
+    query: string | undefined,
+    scoreK: number,
+  ): Promise<Array<{ row: JobRowForMatch; cosine: number }>> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        assessments: {
+          select: {
+            assessmentQuestionAnswers: true,
+            assessmentData: true,
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+    const assessment = buildCompactAssessment(user?.assessments ?? []);
+    const needles = [
+      ...assessment.competencies,
+      ...assessment.recommendedRoles,
+      ...(query?.trim() ? [query.trim()] : []),
+    ];
+
+    const jobs = await this.prisma.job.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { updatedAt: "desc" },
+      take: Math.max(scoreK * 10, 40),
+      select: JOB_MATCH_SELECT,
+    });
+
+    return jobs
+      .map((row) => ({ row, cosine: lexicalOverlap(row, needles) }))
+      .sort((a, b) => b.cosine - a.cosine)
+      .slice(0, scoreK);
+  }
+
+  private async scoreAndHydrate(
+    userId: string,
+    orderedJobs: Array<{ row: JobRowForMatch; cosine: number }>,
+  ): Promise<CandidateJobMatchResult[]> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        assessments: {
+          select: {
+            assessmentQuestionAnswers: true,
+            assessmentData: true,
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+    if (!user) {
+      throw new HttpException({ error: "User not found" }, 404);
+    }
+
+    const assessment = buildCompactAssessment(user.assessments);
+    const preferences = extractCompactPreferences(user.assessments);
+    // Resume text is optional; we do not fetch/parse resumeUrl PDFs.
+    const resumeText: string | null = null;
+
+    const compactJobs: CompactJobForScore[] = orderedJobs.map(({ row }) => ({
+      jobId: row.id,
+      title: row.title,
+      skills: row.skills,
+      industryName: row.industry?.name ?? null,
+      jobRoleName: row.jobRole?.name ?? null,
+      location: row.location,
+      workMode: row.workMode,
+      employmentType: row.employmentType,
+      salaryMin: row.salaryMin,
+      salaryMax: row.salaryMax,
+      salaryCurrency: row.salaryCurrency,
+      noticePeriod: row.noticePeriod,
+      description: row.description,
+      requirements: row.requirements,
+    }));
+
+    const scores = await this.jobScore.scoreJobs({
+      resumeText,
+      assessment,
+      preferences,
+      jobs: compactJobs,
+    });
+    const scoreById = new Map(scores.map((s) => [s.jobId, s]));
+
+    const ranked = [...orderedJobs].sort((a, b) => {
+      const sa = scoreById.get(a.row.id)?.finalScore ?? -1;
+      const sb = scoreById.get(b.row.id)?.finalScore ?? -1;
+      return sb - sa;
+    });
+
+    return ranked.map(({ row }) => {
+      const scored = scoreById.get(row.id);
+      if (!scored) {
+        return hydrateFromRow(row, { score: 0 });
+      }
+      return hydrateFromRow(row, scored);
+    });
   }
 
   private async embedQuery(query: string): Promise<number[]> {
@@ -288,6 +471,50 @@ export class CandidateJobMatchService {
   }
 }
 
+function hydrateFromRow(
+  row: JobRowForMatch,
+  scored:
+    | CandidateJobLayerScore
+    | { score: number },
+): CandidateJobMatchResult {
+  const base: CandidateJobMatchResult = {
+    jobId: row.id,
+    score: "finalScore" in scored ? scored.finalScore : scored.score,
+    title: row.title,
+    companyId: row.companyId,
+    companyName: row.company.name,
+    industryId: row.industryId,
+    industryName: row.industry?.name ?? null,
+    jobRoleId: row.jobRoleId,
+    jobRoleName: row.jobRole?.name ?? null,
+    location: row.location,
+    workMode: row.workMode,
+    snippet: makeSnippet(row.description || row.requirements),
+    status: row.status,
+  };
+
+  if ("finalScore" in scored) {
+    base.matchLevel = scored.matchLevel;
+    base.semanticScore = scored.semanticScore;
+    base.assessmentScore = scored.assessmentScore;
+    base.preferenceScore = scored.preferenceScore;
+    base.matchingSkills = scored.matchingSkills;
+    base.missingSkills = scored.missingSkills;
+    base.strengths = scored.strengths;
+    base.concerns = scored.concerns;
+    base.summary = scored.summary;
+    base.recommendation = scored.recommendation;
+  }
+
+  return base;
+}
+
+/** Map Qdrant cosine similarity to a 0–100 percent for fail-soft ranking. */
+function cosineToPercent(cosine: number): number {
+  if (!Number.isFinite(cosine)) return 0;
+  return Math.round(Math.min(1, Math.max(0, (cosine + 1) / 2)) * 100);
+}
+
 function averageVectors(a: number[], b: number[]): number[] {
   const n = Math.min(a.length, b.length);
   const out = new Array<number>(n);
@@ -304,6 +531,32 @@ function uniqueStrings(values: string[]): string[] {
     out.push(v);
   }
   return out;
+}
+
+/** 0–1 overlap of assessment/query phrases against job title, role, and skills. */
+function lexicalOverlap(row: JobRowForMatch, needles: string[]): number {
+  const phrases = uniqueStrings(
+    needles.map((n) => n.trim().toLowerCase()).filter(Boolean),
+  );
+  if (!phrases.length) return 0.5;
+  const hay = [
+    row.title,
+    row.jobRole?.name ?? "",
+    row.industry?.name ?? "",
+    ...row.skills.map((s) => s.name),
+  ]
+    .join(" \n ")
+    .toLowerCase();
+  let hits = 0;
+  for (const phrase of phrases) {
+    if (phrase.length >= 2 && hay.includes(phrase)) {
+      hits++;
+      continue;
+    }
+    const tokens = phrase.split(/[^a-z0-9+#.]+/i).filter((t) => t.length >= 3);
+    if (tokens.length && tokens.every((t) => hay.includes(t))) hits++;
+  }
+  return hits / phrases.length;
 }
 
 function stripHtml(html: string): string {

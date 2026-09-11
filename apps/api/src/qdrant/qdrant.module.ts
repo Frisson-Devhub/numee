@@ -107,6 +107,24 @@ export class QdrantService implements OnModuleInit {
     }
   }
 
+  /**
+   * True when collections can be listed/created. Used so match can fall back
+   * to Postgres instead of 503 when Cloud/local Qdrant is unreachable.
+   */
+  async tryReady(): Promise<boolean> {
+    try {
+      await this.ensureReady();
+      return true;
+    } catch (err) {
+      this.ready = false;
+      console.warn(
+        "Qdrant not reachable — vector search disabled:",
+        (err as Error).message,
+      );
+      return false;
+    }
+  }
+
   /** Upsert a job vector + payload into the jobs collection. */
   async upsertJobPoint(params: {
     pointId: string;
