@@ -13,6 +13,14 @@ const PORTAL_PANEL_CLASS: Record<AuthShellPortal, string> = {
   admin: "bg-auth-charcoal",
 };
 
+/**
+ * Default form-column surface. The atmospheric wash below is painted only for this
+ * value: it is an opaque surface gradient, so over a caller-supplied `background`
+ * it hides that background entirely (the AI questionnaire's blue/orange gradient
+ * rendered as flat grey, taking its white-on-gradient content down with it).
+ */
+const DEFAULT_BACKGROUND = "bg-surface-muted";
+
 const PORTAL_LABEL: Record<AuthShellPortal, string> = {
   candidate: "Candidate portal",
   recruiter: "Recruiter portal",
@@ -37,8 +45,17 @@ export type AuthShellProps = {
   maxWidth?: string;
   hideSidebar?: boolean;
   background?: string;
-  /** On mobile, lock content to one screen height without page scroll. */
+  /**
+   * On mobile, stretch content to exactly one screen height so panes shrink and scroll
+   * their own overflow. Pair with `fitViewport` to also keep desktop inside the viewport
+   * (desktop panes are fixed-height by design, so they centre rather than stretch).
+   */
   fillViewport?: boolean;
+  /**
+   * Lock the whole shell to one viewport at every breakpoint: the page never scrolls,
+   * and the form column scrolls internally only if the content genuinely cannot fit.
+   */
+  fitViewport?: boolean;
   /** Optional branding copy override (defaults to AuthBrandingCopy). */
   branding?: ReactNode;
   /** Optional badge override (defaults to EnterpriseShieldBadge). */
@@ -65,20 +82,29 @@ export function AuthShell({
   rightPanelOverflow,
   maxWidth = "max-w-md",
   hideSidebar = false,
-  background = "bg-surface-muted",
+  background = DEFAULT_BACKGROUND,
   fillViewport = false,
+  fitViewport = false,
   branding,
   badge,
   portal = "recruiter",
 }: AuthShellProps) {
   const brandingContent = branding ?? <AuthBrandingCopy />;
   const badgeContent = badge ?? <EnterpriseShieldBadge className="mt-8" />;
-  const lightLogoSrc = logoOnLightSrc ?? logoSrc;
+  /*
+   * `logoOnLightSrc` is the dark wordmark, and it only reads on the default light
+   * surface. A caller-supplied `background` is its own artwork (the AI questionnaire's
+   * blue/orange gradient), so the form column falls back to the light-on-dark wordmark.
+   */
+  const usesDefaultSurface = background === DEFAULT_BACKGROUND;
+  const lightLogoSrc = usesDefaultSurface ? (logoOnLightSrc ?? logoSrc) : logoSrc;
   const panelClass = PORTAL_PANEL_CLASS[portal];
 
   return (
     <div
-      className="flex min-h-dvh font-sans text-foreground"
+      className={`flex font-sans text-foreground ${
+        fitViewport ? "h-dvh overflow-hidden" : "min-h-dvh"
+      }`}
       data-auth-portal={portal}
     >
       {!hideSidebar && (
@@ -155,7 +181,11 @@ export function AuthShell({
       )}
 
       <div
-        className={`relative flex w-full min-h-dvh items-center justify-center p-6 text-foreground sm:p-10 ${hideSidebar ? "" : "lg:w-[54%] xl:w-[52%]"} ${background} ${
+        className={`relative flex w-full items-center justify-center text-foreground ${
+          fitViewport
+            ? "h-dvh min-h-0 overflow-y-auto p-4 sm:p-6"
+            : "min-h-dvh p-6 sm:p-10"
+        } ${hideSidebar ? "" : "lg:w-[54%] xl:w-[52%]"} ${background} ${
           fillViewport
             ? "max-md:h-dvh max-md:max-h-dvh max-md:min-h-0 max-md:items-stretch max-md:overflow-hidden max-md:p-3 max-md:sm:p-3"
             : rightPanelOverflow
@@ -163,25 +193,29 @@ export function AuthShell({
               : ""
         }`}
       >
-        {/* Soft form-column atmosphere */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(ellipse 70% 50% at 50% 0%, var(--auth-form-glow), transparent 60%),
-              linear-gradient(180deg, var(--surface-muted) 0%, var(--surface) 45%, var(--surface-muted) 100%)
-            `,
-          }}
-        />
+        {/* Soft form-column atmosphere — only over the default surface (see DEFAULT_BACKGROUND) */}
+        {usesDefaultSurface && (
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background: `
+                radial-gradient(ellipse 70% 50% at 50% 0%, var(--auth-form-glow), transparent 60%),
+                linear-gradient(180deg, var(--surface-muted) 0%, var(--surface) 45%, var(--surface-muted) 100%)
+              `,
+            }}
+          />
+        )}
         <div
           className={`relative z-10 w-full ${maxWidth} ${
             fillViewport
               ? "max-md:flex max-md:h-full max-md:min-h-0 max-md:flex-col max-md:space-y-0 max-md:overflow-hidden max-md:py-0"
-              : "space-y-7 py-4"
+              : fitViewport
+                ? "space-y-4 py-0"
+                : "space-y-7 py-4"
           } ${fillViewport ? "" : "auth-animate-form"}`}
         >
           <div
-            className={`${hideSidebar ? "flex" : "lg:hidden"} mb-6 ${fillViewport ? "max-md:hidden" : ""}`}
+            className={`${hideSidebar ? "flex" : "lg:hidden"} ${fitViewport ? "mb-4" : "mb-6"} ${fillViewport ? "max-md:hidden" : ""}`}
           >
             <a
               href={logoHref}

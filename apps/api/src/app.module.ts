@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { PrismaModule } from "./prisma/prisma.module";
-import { RedisModule } from "./redis/redis.module";
+import { PendingSignupModule } from "./pending-signup/pending-signup.module";
 import { MailModule } from "./mail/mail.module";
 import { CloudinaryModule } from "./cloudinary/cloudinary.module";
 import { QueueModule } from "./queue/queue.module";
@@ -20,7 +20,7 @@ import { CandidateModule } from "./candidate/candidate.module";
 @Module({
   imports: [
     PrismaModule,
-    RedisModule,
+    PendingSignupModule,
     MailModule,
     CloudinaryModule,
     QueueModule,

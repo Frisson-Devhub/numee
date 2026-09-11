@@ -51,6 +51,20 @@ enum EmbeddingStatus {
   FAILED
 }
 
+/// Signup staged between "details submitted" and "OTP verified", so an unverified
+/// signup never creates a `User`/`Company` row. Rows are short-lived (OTP_EXPIRY_SECONDS)
+/// and swept lazily on read/write; `expiresAt` is the source of truth, not row age.
+model PendingSignup {
+  key       String   @id
+  payload   Json
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([expiresAt])
+  @@map("pending_signups")
+}
+
 model User {
   id           String   @id @default(cuid())
   firstName    String   @map("first_name")

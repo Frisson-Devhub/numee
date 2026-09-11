@@ -11,6 +11,7 @@ import { AuthFormHeading } from "@/components/auth/AuthFormHeading";
 import { useI18n } from "@/contexts/I18nContext";
 import { apiRoutes } from "@/constants/api";
 import { DEFAULT_ASSESSMENT_ID, isAssessmentIdWithinLimit } from "@/constants/constants";
+import { USE_LIVEKIT_AUDIO_VISUALIZER } from "@/constants/featureFlags";
 import { frontendRoutes } from "@/constants/frontendRoutes";
 import type { QuestionAnswerPair, StoredMilestoneDocument, StoredMilestoneItem } from "@/interfaces/types";
 import { parseStoredMilestoneStatus } from "@/lib/milestone-status";
@@ -82,13 +83,20 @@ export default function AIQuestionnairePage() {
     return (
         <AuthLayout
             maxWidth="max-w-7xl"
-            rightPanelOverflow
             hideSidebar
             fillViewport
+            fitViewport
             background="bg-gradient-to-br from-blue-500 to-orange-500 relative overflow-hidden"
         >
-            <div className="absolute top-0 left-0 w-125 h-125 bg-blue-600/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-125 h-125 bg-orange-500/10 rounded-full blur-[120px] translate-x-1/2 translate-y/2 pointer-events-none" />
+            {/*
+              * Decorative glows deliberately overhang the container, so they need their own
+              * clipping layer: unclipped they add scroll height to the auth column and put a
+              * scrollbar on a page that otherwise fits one viewport.
+              */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute top-0 left-0 w-125 h-125 bg-blue-600/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2" />
+                <div className="absolute bottom-0 right-0 w-125 h-125 bg-orange-500/10 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2" />
+            </div>
 
             <div className="relative z-10 flex w-full flex-col flex-1 min-h-0 max-md:overflow-hidden">
                 <div className="hidden md:flex items-start justify-between gap-4 shrink-0">
@@ -117,9 +125,10 @@ export default function AIQuestionnairePage() {
                     </Link>
                     <LanguageToggle variant="inline" />
                 </div>
-                <div className="flex-1 min-h-0 max-md:overflow-hidden mt-0 md:mt-8">
+                <div className="flex-1 min-h-0 max-md:overflow-hidden mt-0 md:mt-6">
                     {!resumeBlocked && loaded && (
                         <AvatarLipsyncAssistant
+                            useLiveKitVisualizer={USE_LIVEKIT_AUDIO_VISUALIZER}
                             assessmentId={assessmentId}
                             initialQuestionAnswerPairs={
                                 Array.isArray(assistantQuestionAnswers) &&

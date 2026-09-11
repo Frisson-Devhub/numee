@@ -201,21 +201,29 @@
   }
 }
 
+/*
+ * `backwards`, not `both`: these entrances end on their base styles (opacity 1,
+ * no offset), so retaining the final keyframe buys nothing and costs a lingering
+ * `transform: translateY(0)`. A transformed element becomes the containing block
+ * for `position: fixed` descendants, which trapped every `Modal` backdrop inside
+ * the auth form column instead of covering the viewport. `backwards` still holds
+ * the `from` state through `animation-delay`, so the entrance looks identical.
+ */
 .auth-animate-rise {
-  animation: auth-rise var(--duration-auth) var(--ease-auth) both;
+  animation: auth-rise var(--duration-auth) var(--ease-auth) backwards;
 }
 
 .auth-animate-fade {
-  animation: auth-fade calc(var(--duration-auth) * 0.85) var(--ease-auth) both;
+  animation: auth-fade calc(var(--duration-auth) * 0.85) var(--ease-auth) backwards;
 }
 
 .auth-animate-rise-delay {
-  animation: auth-rise var(--duration-auth) var(--ease-auth) both;
+  animation: auth-rise var(--duration-auth) var(--ease-auth) backwards;
   animation-delay: 120ms;
 }
 
 .auth-animate-form {
-  animation: auth-rise calc(var(--duration-auth) * 1.05) var(--ease-auth) both;
+  animation: auth-rise calc(var(--duration-auth) * 1.05) var(--ease-auth) backwards;
   animation-delay: 80ms;
 }
 

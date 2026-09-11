@@ -14,6 +14,7 @@ export function AuthLayout({
   hideSidebar = false,
   background = "bg-surface-muted",
   fillViewport = false,
+  fitViewport = false,
 }: {
   children: React.ReactNode;
   rightPanelOverflow?: boolean;
@@ -22,6 +23,8 @@ export function AuthLayout({
   background?: string;
   /** On mobile, lock content to one screen height without page scroll. */
   fillViewport?: boolean;
+  /** Lock the shell to one viewport at every breakpoint (no page scroll). */
+  fitViewport?: boolean;
 }) {
   return (
     <AuthShell
@@ -35,6 +38,7 @@ export function AuthLayout({
       hideSidebar={hideSidebar}
       background={background}
       fillViewport={fillViewport}
+      fitViewport={fitViewport}
     >
       {children}
     </AuthShell>

@@ -101,7 +101,7 @@ export default function SignupForm() {
     }, [router]);
 
     return (
-        <AuthLayout rightPanelOverflow>
+        <AuthLayout fitViewport>
             <OTPSentModal
                 open={showOTPModal}
                 onClose={() => {
@@ -144,7 +144,7 @@ export default function SignupForm() {
                 agreeToTerms: false
             }} validationSchema={SignupSchema} onSubmit={handleCreateAccount}>
                 {({ isSubmitting, setFieldValue, values }) => (
-                    <Form className="space-y-5">
+                    <Form className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <LabeledInput
@@ -156,7 +156,7 @@ export default function SignupForm() {
                                     placeholder="John"
 
                                 />
-                                <ErrorMessage name="firstName" component="div" className="text-red-600 text-sm mt-3" />
+                                <ErrorMessage name="firstName" component="div" className="text-red-600 text-sm mt-1.5" />
                             </div>
                             <div>
 
@@ -169,7 +169,7 @@ export default function SignupForm() {
                                     placeholder="Doe"
 
                                 />
-                                <ErrorMessage name="lastName" component="div" className="text-red-600 text-sm mt-3" />
+                                <ErrorMessage name="lastName" component="div" className="text-red-600 text-sm mt-1.5" />
                             </div>
                         </div>
 
@@ -193,7 +193,7 @@ export default function SignupForm() {
                                     value={values.dateOfBirth}
                                     onChange={(val) => setFieldValue("dateOfBirth", val)}
                                 />
-                                <ErrorMessage name="dateOfBirth" component="div" className="text-red-600 text-sm mt-3" />
+                                <ErrorMessage name="dateOfBirth" component="div" className="text-red-600 text-sm mt-1.5" />
                             </div>
                             <div>
 
@@ -239,10 +239,7 @@ export default function SignupForm() {
                                 </>
                             }
                         />
-                        <div>
-
-                            <ErrorMessage name="agreeToTerms" component="div" className="text-red-600 text-sm" />
-                        </div>
+                        <ErrorMessage name="agreeToTerms" component="div" className="text-red-600 text-sm" />
 
                         <GradientButton type="submit" disabled={isSubmitting}>
                             {isSubmitting ? "Creating…" : "Create Account"}

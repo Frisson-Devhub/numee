@@ -12,7 +12,7 @@ import { compare, hash } from "bcryptjs";
 import type { Prisma } from "@prisma/client";
 import { OTP_EXPIRY_SECONDS, apiRoutes, frontendRoutes } from "@numee/shared/server";
 import { PrismaService } from "../prisma/prisma.service";
-import { RedisService } from "../redis/redis.module";
+import { PendingSignupService } from "../pending-signup/pending-signup.module";
 import { MailService } from "../mail/mail.module";
 import { generateOTP } from "../otp/otp";
 import { signSession, verifySession } from "../common/auth";
@@ -49,11 +49,11 @@ function apiBaseUrl(): string {
 export class AuthController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly redis: RedisService,
+    private readonly pendingSignups: PendingSignupService,
     private readonly mail: MailService,
   ) {}
 
-  /** Stage candidate signup in Redis and email OTP; user row created after verify. */
+  /** Stage candidate signup and email OTP; user row created after verify. */
   @Post("signup")
   async signup(@Body() body: Record<string, string>) {
     try {
@@ -99,7 +99,7 @@ export class AuthController {
         otpAttempts: 0,
       };
 
-      await this.redis.set(`signup:${emailOrPhone.trim()}`, signupData, {
+      await this.pendingSignups.set(`signup:${emailOrPhone.trim()}`, signupData, {
         ex: OTP_EXPIRY_SECONDS,
       });
 
@@ -138,8 +138,8 @@ export class AuthController {
         throw new HttpException({ error: "Missing required fields" }, 400);
       }
 
-      const redisKey = `signup:${emailOrPhone}`;
-      const signupData = await this.redis.get<Record<string, unknown>>(redisKey);
+      const pendingKey = `signup:${emailOrPhone}`;
+      const signupData = await this.pendingSignups.get<Record<string, unknown>>(pendingKey);
       if (!signupData) {
         throw new HttpException(
           { error: "Signup session expired or not found. Please sign up again." },
@@ -150,7 +150,7 @@ export class AuthController {
       if (signupData.otp !== otp) {
         signupData.otpAttempts = ((signupData.otpAttempts as number) || 0) + 1;
         if ((signupData.otpAttempts as number) >= 3) {
-          await this.redis.del(redisKey);
+          await this.pendingSignups.del(pendingKey);
           throw new HttpException(
             {
               error: "Invalid OTP. Maximum attempts exceeded. Please sign up again.",
@@ -159,7 +159,7 @@ export class AuthController {
             400,
           );
         }
-        await this.redis.set(redisKey, signupData, { keepTtl: true });
+        await this.pendingSignups.set(pendingKey, signupData, { keepTtl: true });
         const remainingAttempts = 3 - (signupData.otpAttempts as number);
         throw new HttpException(
           {
@@ -190,7 +190,7 @@ export class AuthController {
         } as Prisma.UserCreateInput,
       });
 
-      await this.redis.del(redisKey);
+      await this.pendingSignups.del(pendingKey);
       const session = signSession({ id: user.id, email: user.emailOrPhone });
       setPortalSessionCookie(res, "candidate", session);
 
@@ -205,7 +205,7 @@ export class AuthController {
     }
   }
 
-  /** Rotate signup OTP in Redis and resend email when address looks like email. */
+  /** Rotate the staged signup OTP and resend email when address looks like email. */
   @Post("resend-signup-otp")
   async resendSignupOtp(@Body() body: { emailOrPhone?: string }) {
     try {
@@ -214,13 +214,13 @@ export class AuthController {
         throw new HttpException({ error: "Email or phone is required" }, 400);
       }
 
-      const redisKey = `signup:${emailOrPhone}`;
-      const signupData = await this.redis.get<{
+      const pendingKey = `signup:${emailOrPhone}`;
+      const signupData = await this.pendingSignups.get<{
         firstName: string;
         emailOrPhone: string;
         otpAttempts: number;
         [key: string]: unknown;
-      }>(redisKey);
+      }>(pendingKey);
 
       if (!signupData) {
         throw new HttpException(
@@ -230,8 +230,8 @@ export class AuthController {
       }
 
       const otp = generateOTP();
-      await this.redis.set(
-        redisKey,
+      await this.pendingSignups.set(
+        pendingKey,
         { ...signupData, otp, otpAttempts: 0 },
         { ex: OTP_EXPIRY_SECONDS },
       );

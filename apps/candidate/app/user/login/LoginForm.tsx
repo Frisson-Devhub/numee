@@ -82,7 +82,7 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
   };
 
   const formBody = (
-    <div className="space-y-6">
+    <div className={isMobile ? "space-y-6" : "space-y-4"}>
       <AuthFormHeading
         title={isMobile ? t("auth.login.titleMobile") : t("auth.login.title")}
         subtitle={isMobile ? t("auth.login.subtitleMobile") : t("auth.login.subtitle")}
@@ -103,7 +103,7 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
         onSubmit={handleLogin}
       >
         {({ isSubmitting, setFieldValue, values }) => (
-          <Form className="space-y-5">
+          <Form className={isMobile ? "space-y-5" : "space-y-4"}>
             <LabeledInput
               id="email"
               type="email"
@@ -150,27 +150,30 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
       </Formik>
 
       <SocialLoginOptions layout={isMobile ? "stack" : "grid"} />
-      {!isMobile && (
-        <p className="text-center text-sm text-foreground-subtle">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/user/signup"
+      {/* Single compact footer block: keeps the sign-in screen inside one viewport. */}
+      <div className="space-y-1 text-center text-sm text-foreground-subtle">
+        {!isMobile && (
+          <p>
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/user/signup"
+              className="font-medium text-brand-primary transition hover:text-brand-primary-bright"
+            >
+              Sign up
+            </Link>
+          </p>
+        )}
+        <p>
+          Are you a recruiter?{" "}
+          <a
+            href={recruiterLoginUrl}
             className="font-medium text-brand-primary transition hover:text-brand-primary-bright"
           >
-            Sign up
-          </Link>
+            Sign in to the Recruiter Portal
+          </a>
+          . Admin credentials are not accepted here.
         </p>
-      )}
-      <p className="text-center text-sm text-foreground-subtle">
-        Are you a recruiter?{" "}
-        <a
-          href={recruiterLoginUrl}
-          className="font-medium text-brand-primary transition hover:text-brand-primary-bright"
-        >
-          Sign in to the Recruiter Portal
-        </a>
-        . Admin credentials are not accepted here.
-      </p>
+      </div>
     </div>
   );
 
@@ -178,5 +181,5 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
     return <MobileAuthLayout>{formBody}</MobileAuthLayout>;
   }
 
-  return <AuthLayout>{formBody}</AuthLayout>;
+  return <AuthLayout fitViewport>{formBody}</AuthLayout>;
 }

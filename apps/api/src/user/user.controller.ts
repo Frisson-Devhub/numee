@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import type { Request } from "express";
 import { PrismaService } from "../prisma/prisma.service";
-import { RedisService } from "../redis/redis.module";
+import { PendingSignupService } from "../pending-signup/pending-signup.module";
 import { AssessmentService } from "../assessment/assessment.module";
 import { SessionGuard } from "../common/guards/session.guard";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
@@ -27,7 +27,7 @@ import { CandidateEmbeddingsService } from "../candidate/candidate-embeddings.se
 export class UserController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly redis: RedisService,
+    private readonly pendingSignups: PendingSignupService,
     private readonly assessment: AssessmentService,
     private readonly candidateEmbeddings: CandidateEmbeddingsService,
   ) {}
@@ -269,7 +269,7 @@ export class UserController {
     }
   }
 
-  /** Attach resume/LinkedIn during signup (Redis) or after session (qualification agent). */
+  /** Attach resume/LinkedIn during staged signup or after session (qualification agent). */
   @Post("signup/social")
   async signupSocial(
     @Req() req: Request,
@@ -368,8 +368,8 @@ export class UserController {
         );
       }
 
-      const redisKey = `signup:${emailOrPhone.trim()}`;
-      const signupData = await this.redis.get<Record<string, unknown>>(redisKey);
+      const pendingKey = `signup:${emailOrPhone.trim()}`;
+      const signupData = await this.pendingSignups.get<Record<string, unknown>>(pendingKey);
       if (!signupData || typeof signupData !== "object") {
         throw new HttpException(
           { error: "Signup session not found or expired. Please sign up again." },
@@ -386,7 +386,7 @@ export class UserController {
           ? { resumeUrl: String(resumeUrl).trim() || null }
           : {}),
       };
-      await this.redis.set(redisKey, updated, { keepTtl: true });
+      await this.pendingSignups.set(pendingKey, updated, { keepTtl: true });
       return {
         message: "Profile updated",
         linkedInUrl: updated.linkedInUrl,

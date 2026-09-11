@@ -9,7 +9,7 @@ import type { Response } from "express";
 import { compare, hash } from "bcryptjs";
 import { OTP_EXPIRY_SECONDS } from "@numee/shared/server";
 import { PrismaService } from "../../prisma/prisma.service";
-import { RedisService } from "../../redis/redis.module";
+import { PendingSignupService } from "../../pending-signup/pending-signup.module";
 import { MailService } from "../../mail/mail.module";
 import { generateOTP } from "../../otp/otp";
 import { signSession, verifySession } from "../../common/auth";
@@ -35,11 +35,11 @@ type RecruiterSignupPayload = {
 export class RecruiterAuthController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly redis: RedisService,
+    private readonly pendingSignups: PendingSignupService,
     private readonly mail: MailService,
   ) {}
 
-  /** Stage recruiter+company signup in Redis and email OTP. */
+  /** Stage recruiter+company signup and email OTP. */
   @Post("signup")
   async signup(@Body() body: Record<string, string>) {
     try {
@@ -95,7 +95,7 @@ export class RecruiterAuthController {
         otpAttempts: 0,
       };
 
-      await this.redis.set(`recruiter-signup:${email}`, signupData, {
+      await this.pendingSignups.set(`recruiter-signup:${email}`, signupData, {
         ex: OTP_EXPIRY_SECONDS,
       });
       await this.mail.sendSignupEmail(email, signupData.firstName, otp);
@@ -129,9 +129,9 @@ export class RecruiterAuthController {
         throw new HttpException({ error: "Missing required fields" }, 400);
       }
 
-      const redisKey = `recruiter-signup:${email}`;
+      const pendingKey = `recruiter-signup:${email}`;
       const signupData =
-        await this.redis.get<RecruiterSignupPayload>(redisKey);
+        await this.pendingSignups.get<RecruiterSignupPayload>(pendingKey);
       if (!signupData) {
         throw new HttpException(
           {
@@ -144,7 +144,7 @@ export class RecruiterAuthController {
       if (signupData.otp !== otp) {
         signupData.otpAttempts = (signupData.otpAttempts || 0) + 1;
         if (signupData.otpAttempts >= 3) {
-          await this.redis.del(redisKey);
+          await this.pendingSignups.del(pendingKey);
           throw new HttpException(
             {
               error:
@@ -154,7 +154,7 @@ export class RecruiterAuthController {
             400,
           );
         }
-        await this.redis.set(redisKey, signupData, { keepTtl: true });
+        await this.pendingSignups.set(pendingKey, signupData, { keepTtl: true });
         const remainingAttempts = 3 - signupData.otpAttempts;
         throw new HttpException(
           {
@@ -206,7 +206,7 @@ export class RecruiterAuthController {
         return { user, company };
       });
 
-      await this.redis.del(redisKey);
+      await this.pendingSignups.del(pendingKey);
       const session = signSession({
         id: result.user.id,
         email: result.user.emailOrPhone,
@@ -237,9 +237,9 @@ export class RecruiterAuthController {
         throw new HttpException({ error: "Email is required" }, 400);
       }
 
-      const redisKey = `recruiter-signup:${email}`;
+      const pendingKey = `recruiter-signup:${email}`;
       const signupData =
-        await this.redis.get<RecruiterSignupPayload>(redisKey);
+        await this.pendingSignups.get<RecruiterSignupPayload>(pendingKey);
       if (!signupData) {
         throw new HttpException(
           { error: "Session expired", code: "SESSION_EXPIRED" },
@@ -248,8 +248,8 @@ export class RecruiterAuthController {
       }
 
       const otp = generateOTP();
-      await this.redis.set(
-        redisKey,
+      await this.pendingSignups.set(
+        pendingKey,
         { ...signupData, otp, otpAttempts: 0 },
         { ex: OTP_EXPIRY_SECONDS },
       );
