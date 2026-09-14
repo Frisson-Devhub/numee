@@ -6,6 +6,7 @@ import { Mic, MicOff, MessageSquare, Video } from "lucide-react";
 import { Room, RoomEvent, createLocalAudioTrack, Track } from "livekit-client";
 import type {
     LocalAudioTrack,
+    RemoteAudioTrack,
     Room as RoomType,
     TranscriptionSegment,
     RemoteTrack,
@@ -16,7 +17,8 @@ import { Modal } from "../ui/Modal";
 import { apiRoutes } from "@/constants/api";
 import { MILESTONE_CONFIG } from "@/constants/constants";
 import { frontendRoutes } from "@/constants/frontendRoutes";
-import { LiveKitAudioVisualizer } from "./LiveKitAudioVisualizer";
+import type { AgentState } from "@livekit/components-react";
+import { AgentAudioVisualizerAura } from "@/components/agent-audio-visualizer-aura";
 import { CircularMilestoneProgress } from "./CircularMilestoneProgress";
 import { Milestone } from "./Milestone";
 import { ApiCall } from "@/lib/utils";
@@ -281,6 +283,21 @@ function questionAnswerPairsToMessages(
 }
 
 /** DB stores { key, status }; tracker API and Milestone use { milestone, status }. */
+/** Map connection + transcript activity onto the LiveKit `AgentState` the Aura shader reads. */
+function deriveAgentVisualizerState(
+    isConnected: boolean,
+    statusType: StatusType,
+    liveTranscript: { user: string; persona: string }
+): AgentState {
+    if (!isConnected) {
+        return statusType === "loading" ? "connecting" : "disconnected";
+    }
+    if (statusType === "loading") return "connecting";
+    if (liveTranscript.persona.trim()) return "speaking";
+    if (liveTranscript.user.trim()) return "thinking";
+    return "listening";
+}
+
 export function AvatarLipsyncAssistant({
     assessmentId = "assessment1",
     initialQuestionAnswerPairs,
@@ -322,8 +339,10 @@ export function AvatarLipsyncAssistant({
     const [isMuted, setIsMuted] = useState(false);
     /** True when LiveKit / Anam video is playing (remote track or stream URL). */
     const [avatarVideoActive, setAvatarVideoActive] = useState(false);
-    /** Remote agent audio, fed to the visualizer when it replaces the avatar video. */
-    const [agentAudioTrack, setAgentAudioTrack] = useState<MediaStreamTrack | null>(null);
+    /** Remote agent audio, fed to the Aura visualizer when it replaces the avatar video. */
+    const [remoteAgentAudioTrack, setRemoteAgentAudioTrack] = useState<RemoteAudioTrack | null>(
+        null,
+    );
     const [isDisable, setIsDisabled] = useState(false);
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [milestoneStatus, setMilestoneStatus] = useState<MilestoneStatusItem[] | null>(null);
@@ -342,6 +361,7 @@ export function AvatarLipsyncAssistant({
     const roomRef = useRef<RoomType | null>(null);
     const localMicRef = useRef<LocalAudioTrack | null>(null);
     const remoteAudioElementsRef = useRef<HTMLMediaElement[]>([]);
+    const remoteAgentAudioTrackRef = useRef<RemoteAudioTrack | null>(null);
     const seenSegmentIdsRef = useRef<Set<string>>(new Set());
     const initialLiveClearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasAddedPersonaMessageRef = useRef(false);
@@ -488,7 +508,8 @@ export function AvatarLipsyncAssistant({
             v.srcObject = null;
         }
         setAvatarVideoActive(false);
-        setAgentAudioTrack(null);
+        remoteAgentAudioTrackRef.current = null;
+        setRemoteAgentAudioTrack(null);
         // Stop all remote audio elements immediately
         remoteAudioElementsRef.current.forEach((el) => {
             try {
@@ -639,6 +660,7 @@ export function AvatarLipsyncAssistant({
 
             room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
                 if (track.kind === Track.Kind.Video) {
+                    if (useLiveKitVisualizer) return;
                     const el = videoRef.current;
                     if (el) {
                         try {
@@ -659,20 +681,22 @@ export function AvatarLipsyncAssistant({
                     return;
                 }
                 if (track.kind === Track.Kind.Audio) {
+                    const audioTrack = track as RemoteAudioTrack;
+                    remoteAgentAudioTrackRef.current = audioTrack;
+                    setRemoteAgentAudioTrack(audioTrack);
                     const el = track.attach();
                     el.autoplay = true;
                     document.body.appendChild(el);
                     remoteAudioElementsRef.current.push(el);
-                    // The visualizer analyses this track; playback stays on the element above.
-                    setAgentAudioTrack(track.mediaStreamTrack);
                 }
             });
 
             room.on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
                 if (track.kind === Track.Kind.Audio) {
-                    setAgentAudioTrack((current) =>
-                        current === track.mediaStreamTrack ? null : current,
-                    );
+                    if (remoteAgentAudioTrackRef.current === track) {
+                        remoteAgentAudioTrackRef.current = null;
+                        setRemoteAgentAudioTrack(null);
+                    }
                     return;
                 }
                 if (track.kind !== Track.Kind.Video) return;
@@ -766,7 +790,7 @@ export function AvatarLipsyncAssistant({
             });
 
             const streamUrl = data?.stream_url ?? data?.video_url ?? data?.embed_url;
-            if (typeof streamUrl === "string") {
+            if (!useLiveKitVisualizer && typeof streamUrl === "string") {
                 const applyStreamUrlFallback = () => {
                     const el = videoRef.current;
                     if (!el || remoteVideoTrackRef.current) return;
@@ -848,9 +872,14 @@ export function AvatarLipsyncAssistant({
 
     const panelBg = "bg-[#0f172a]/40 backdrop-blur-2xl border-white/10";
     const panelShadow = "shadow-[0_20px_50px_rgba(0,0,0,0.3)]";
-    /** Whichever renderer owns the stage — avatar video, or the visualizer's audio track. */
-    const isStageActive = useLiveKitVisualizer ? agentAudioTrack !== null : avatarVideoActive;
-    const isWaitingForAvatar = !isStageActive && (status.type === "loading" || isConnected);
+    const agentVisualizerState = useMemo(
+        () => deriveAgentVisualizerState(isConnected, status.type, liveTranscript),
+        [isConnected, status.type, liveTranscript]
+    );
+    const visualizerActive = useLiveKitVisualizer && remoteAgentAudioTrack != null;
+    const isWaitingForAvatar = useLiveKitVisualizer
+        ? !visualizerActive && (status.type === "loading" || isConnected)
+        : !avatarVideoActive && (status.type === "loading" || isConnected);
 
     const statusMessage =
         status.customMessage ?? t(`aiQuestionnaire.assistant.status.${status.key}`);
@@ -1038,7 +1067,7 @@ export function AvatarLipsyncAssistant({
                     mobileView === "chat" ? "hidden md:flex" : "flex"
                 }`}
             >
-                <div className="flex flex-1 min-h-0 flex-col items-center max-md:justify-start justify-center relative overflow-hidden md:min-h-75 md:aspect-video md:rounded-lg md:bg-slate-900">
+                <div className={`flex flex-1 min-h-0 flex-col items-center max-md:justify-start justify-center relative overflow-hidden md:min-h-75 md:aspect-video md:rounded-lg ${useLiveKitVisualizer ? "md:bg-transparent" : "md:bg-slate-900"}`}>
                     <div className="md:hidden shrink-0 z-10 mt-5 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 backdrop-blur-sm">
                         <span
                             className={`h-2 w-2 shrink-0 rounded-full ${
@@ -1069,25 +1098,32 @@ export function AvatarLipsyncAssistant({
                             h-72 w-72 sm:h-96 sm:w-96 rounded-full
                             md:absolute md:inset-0 md:h-full md:w-full md:rounded-lg md:border-white/10 md:shadow-none`}
                         >
-                        {useLiveKitVisualizer ? (
-                            <LiveKitAudioVisualizer
-                                track={agentAudioTrack}
-                                className={`absolute inset-0 z-1 transition-opacity duration-300 ${
-                                    isStageActive ? "opacity-100" : "opacity-0 pointer-events-none"
-                                }`}
-                            />
-                        ) : (
-                            <video
-                                ref={videoRef}
-                                autoPlay
-                                playsInline
-                                muted
-                                className={`absolute inset-0 z-1 h-full w-full object-cover object-center transition-opacity duration-300 max-md:scale-110 ${
-                                    avatarVideoActive ? "opacity-100" : "opacity-0 pointer-events-none"
-                                }`}
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            muted
+                            className={`absolute inset-0 z-1 h-full w-full object-cover object-center transition-opacity duration-300 max-md:scale-110 ${
+                                useLiveKitVisualizer
+                                    ? "hidden"
+                                    : avatarVideoActive
+                                      ? "opacity-100"
+                                      : "opacity-0 pointer-events-none"
+                            }`}
+                        />
+                        {useLiveKitVisualizer && visualizerActive && (
+                            <AgentAudioVisualizerAura
+                                size="lg"
+                                state={agentVisualizerState}
+                                audioTrack={remoteAgentAudioTrack}
+                                color="#FFFFFF"
+                                colorShift={0.05}
+                                themeMode="dark"
+                                className="absolute inset-0 z-1 h-full w-full bg-transparent"
                             />
                         )}
-                        {!isStageActive && (
+                        {((useLiveKitVisualizer && !visualizerActive) ||
+                            (!useLiveKitVisualizer && !avatarVideoActive)) && (
                             <div className="absolute inset-0 z-0 flex items-center justify-center bg-slate-800/80 md:bg-slate-800/60 md:px-6">
                                 {isWaitingForAvatar ? (
                                     <div className="flex flex-col items-center gap-3 px-4">
