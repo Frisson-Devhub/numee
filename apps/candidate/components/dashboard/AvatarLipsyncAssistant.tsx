@@ -22,6 +22,7 @@ import { AgentAudioVisualizerAura } from "@/components/agent-audio-visualizer-au
 import { CircularMilestoneProgress } from "./CircularMilestoneProgress";
 import { Milestone } from "./Milestone";
 import { ApiCall } from "@/lib/utils";
+import { randomId } from "@/lib/randomId";
 import {
     getMilestoneCompletionPercent,
     milestonesToUiFormat,
@@ -627,7 +628,7 @@ export function AvatarLipsyncAssistant({
             const cid =
                 typeof (data as { conversation_id?: string }).conversation_id === "string"
                     ? (data as { conversation_id: string }).conversation_id
-                    : crypto.randomUUID();
+                    : randomId();
             setConversationId(cid);
             conversationIdRef.current = cid;
 
