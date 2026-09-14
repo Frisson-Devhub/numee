@@ -11,6 +11,10 @@ export default defineConfig({
     },
   },
   server: {
+    // Bind every interface. Vite defaults to loopback, so on a hosted box the panel is
+    // unreachable at the machine's public address while the Next apps (which bind
+    // 0.0.0.0 by default) work fine — the failure looks like "admin is down".
+    host: true,
     port: 3002,
     proxy: {
       "/api": {
@@ -20,6 +24,7 @@ export default defineConfig({
     },
   },
   preview: {
+    host: true,
     port: 3002,
     proxy: {
       "/api": {
