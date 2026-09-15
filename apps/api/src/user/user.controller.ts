@@ -22,6 +22,10 @@ import {
   withResumeAllowed,
 } from "../milestone/milestone-status";
 import { CandidateEmbeddingsService } from "../candidate/candidate-embeddings.service";
+import {
+  LEGACY_SESSION_COOKIE,
+  PORTAL_SESSION_COOKIES,
+} from "@numee/shared/server";
 
 @Controller()
 export class UserController {
@@ -289,8 +293,14 @@ export class UserController {
       if (!resumeUrl?.trim()) {
         throw new HttpException({ error: "Resume upload is required" }, 400);
       }
-      const sessionToken = (req as Request & { cookies?: Record<string, string> })
-        .cookies?.session;
+      // Read the portal-scoped cookie, not the pre-namespacing `session` one. Reading
+      // only the legacy name meant a signed-in candidate looked logged-out here, so the
+      // handler fell through to the staged-signup branch and rejected them with
+      // "Please sign in or complete signup first" after a perfectly good resume upload.
+      const cookies =
+        (req as Request & { cookies?: Record<string, string> }).cookies ?? {};
+      const sessionToken =
+        cookies[PORTAL_SESSION_COOKIES.candidate] ?? cookies[LEGACY_SESSION_COOKIE];
       const { verifySession } = await import("../common/auth");
       const session = sessionToken ? verifySession(sessionToken) : null;
 
@@ -311,60 +321,81 @@ export class UserController {
         const resumeValue =
           resumeUrl != null ? String(resumeUrl).trim() || null : undefined;
 
-        const qualificationAgentUrl = `${process.env.AI_AGENT_URL}/agents/qualification_agent`;
-        const agentRes = await fetch(qualificationAgentUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", accept: "application/json" },
-          body: JSON.stringify({
-            resume_url: resumeValue ?? "",
-            linkedin_url: linkedInValue ?? "",
-          }),
-        });
-        if (!agentRes.ok) {
-          console.error("Qualification agent error:", agentRes.status, await agentRes.text());
-          throw new HttpException(
-            {
-              error:
-                "Profile qualification failed. Please check your resume and LinkedIn URL and try again.",
-            },
-            502,
-          );
-        }
-
-        const data = await agentRes.json();
-        const questionToAsked = data?.qualifications_from_cv?.question_to_asked;
-        const raw = Array.isArray(questionToAsked)
-          ? questionToAsked
-          : questionToAsked != null
-            ? [questionToAsked]
-            : [];
-        const agentQuestions: string[] = [];
-        for (const item of raw) {
-          if (typeof item === "string") agentQuestions.push(item);
-          else if (
-            item &&
-            typeof item === "object" &&
-            Array.isArray((item as { qualification_question?: unknown }).qualification_question)
-          ) {
-            for (const q of (item as { qualification_question: string[] }).qualification_question) {
-              if (typeof q === "string") agentQuestions.push(q);
-            }
-          }
-        }
-
+        // Save the profile before calling out. Resume upload is a mandatory step and the
+        // assessment guards read `resumeUrl`, so failing this request on an external
+        // outage used to strand the candidate: the resume was never persisted and they
+        // were bounced straight back to this page with nothing saved.
         await this.prisma.user.update({
           where: { id: session.id },
           data: {
             ...(linkedInValue !== undefined && { linkedInUrl: linkedInValue }),
             ...(resumeValue !== undefined && { resumeUrl: resumeValue }),
-            ...(agentQuestions.length > 0 && { agentQuestions }),
           },
         });
+
+        // Qualification questions personalise the assessment but are not required to
+        // start it, so the agent is best-effort: log failures and carry on.
+        let qualified = false;
+        try {
+          const qualificationAgentUrl = `${process.env.AI_AGENT_URL}/agents/qualification_agent`;
+          const agentRes = await fetch(qualificationAgentUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", accept: "application/json" },
+            body: JSON.stringify({
+              resume_url: resumeValue ?? "",
+              linkedin_url: linkedInValue ?? "",
+            }),
+          });
+
+          if (!agentRes.ok) {
+            console.error(
+              "Qualification agent error:",
+              agentRes.status,
+              await agentRes.text(),
+            );
+          } else {
+            const data = await agentRes.json();
+            const questionToAsked = data?.qualifications_from_cv?.question_to_asked;
+            const raw = Array.isArray(questionToAsked)
+              ? questionToAsked
+              : questionToAsked != null
+                ? [questionToAsked]
+                : [];
+            const agentQuestions: string[] = [];
+            for (const item of raw) {
+              if (typeof item === "string") agentQuestions.push(item);
+              else if (
+                item &&
+                typeof item === "object" &&
+                Array.isArray(
+                  (item as { qualification_question?: unknown }).qualification_question,
+                )
+              ) {
+                for (const q of (item as { qualification_question: string[] })
+                  .qualification_question) {
+                  if (typeof q === "string") agentQuestions.push(q);
+                }
+              }
+            }
+
+            if (agentQuestions.length > 0) {
+              await this.prisma.user.update({
+                where: { id: session.id },
+                data: { agentQuestions },
+              });
+            }
+            qualified = true;
+          }
+        } catch (error) {
+          console.error("Qualification agent request failed:", error);
+        }
 
         return {
           message: "Profile updated",
           linkedInUrl: linkedInValue ?? null,
           resumeUrl: resumeValue ?? null,
+          /** False when the qualification agent was unreachable; the profile still saved. */
+          qualified,
         };
       }
 
