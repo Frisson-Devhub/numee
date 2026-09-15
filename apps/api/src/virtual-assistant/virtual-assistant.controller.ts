@@ -374,6 +374,15 @@ export class VirtualAssistantController {
               ? getApiLanguage(localeFromBody)
               : getApiLanguage(DEFAULT_LOCALE);
 
+        // The assistant grounds its questions in the CV, so resume_url is always sent.
+        // Resume upload is mandatory at signup, but older accounts predate that rule —
+        // send an empty string rather than omitting the key so the shape never varies.
+        const candidate = await this.prisma.user.findUnique({
+          where: { id: user.id },
+          select: { resumeUrl: true },
+        });
+        const resume_url = candidate?.resumeUrl?.trim() || "";
+
         const dispatchUrl = `${this.agentBase()}/${DISPATCH_AGENT_PATH.replace(/^\//, "")}`;
         const response = await fetch(dispatchUrl, {
           method: "POST",
@@ -385,6 +394,7 @@ export class VirtualAssistantController {
             user_id: user.id,
             conversation_id: assessment.id,
             conversation_history,
+            resume_url,
             language,
           }),
         });
