@@ -22,10 +22,8 @@ export default async function QuestionnaireLayout({
   }
 
   const profile = await fetchProfileServer();
-  const hasCompletedSocial = Boolean(
-    profile?.linkedInUrl?.trim() || profile?.resumeUrl?.trim()
-  );
-  if (!hasCompletedSocial) {
+  // Resume is mandatory; a LinkedIn URL alone no longer completes the social step.
+  if (!profile?.resumeUrl?.trim()) {
     redirect("/user/signup/social");
   }
 

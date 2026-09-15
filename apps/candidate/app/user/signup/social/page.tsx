@@ -31,20 +31,14 @@ export default function SignupSocialPage() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [emailOrPhone, setEmailOrPhone] = useState<string | null>(null);
-  const [showSkipButton, setShowSkipButton] = useState(true);
 
   useEffect(() => {
     const identifier = sessionStorage.getItem("signupIdentifier");
     setEmailOrPhone(identifier ?? null);
   }, []);
 
-  const handleSkip = () => {
-    router.replace(frontendRoutes.questionnaire)
-  }
-
   const handleResumeChange = async (files: FileList | null) => {
     setResumeError("");
-    setShowSkipButton(false);
     if (!files?.length) return;
 
     const file = files[0];
@@ -74,6 +68,10 @@ export default function SignupSocialPage() {
 
   const handleReviewAndContinue = async () => {
     setSubmitError("");
+    if (!resumeUrl) {
+      setSubmitError("Please upload your resume to continue.");
+      return;
+    }
     setSubmitLoading(true);
     try {
       const res = await ApiCall<{ error?: string }>({
@@ -81,7 +79,7 @@ export default function SignupSocialPage() {
         method: "POST",
         body: {
           linkedInUrl: linkedInUrl.trim() || undefined,
-          resumeUrl: resumeUrl ?? undefined,
+          resumeUrl,
           ...(emailOrPhone?.trim() ? { emailOrPhone: emailOrPhone.trim() } : {}),
         },
       });
@@ -173,21 +171,19 @@ export default function SignupSocialPage() {
             {submitError}
           </p>
         )}
-        {showSkipButton ? <GradientButton
+        <GradientButton
           type="button"
           className="w-full"
-          onClick={handleSkip}
+          disabled={submitLoading || resumeUploading || !resumeUrl}
+          onClick={handleReviewAndContinue}
         >
-          Skip and Continue
+          {submitLoading ? "Saving…" : resumeUploading ? "Uploading…" : "Review and continue"}
         </GradientButton>
-          : <GradientButton
-            type="button"
-            className="w-full"
-            disabled={submitLoading || resumeUploading}
-            onClick={handleReviewAndContinue}
-          >
-            {submitLoading ? "Saving…" : resumeUploading ? "Uploading…" : "Review and continue"}
-          </GradientButton>}
+        {!resumeUrl && !resumeUploading && (
+          <p className="text-sm text-gray-500 text-center">
+            Upload your resume to continue.
+          </p>
+        )}
 
 
         <p className="text-sm text-gray-500 text-right">

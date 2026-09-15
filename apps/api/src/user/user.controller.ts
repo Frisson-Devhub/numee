@@ -269,7 +269,11 @@ export class UserController {
     }
   }
 
-  /** Attach resume/LinkedIn during staged signup or after session (qualification agent). */
+  /**
+   * Attach resume/LinkedIn during staged signup or after session (qualification agent).
+   * A resume is mandatory: the signup step it backs cannot be skipped, and the
+   * qualification agent has nothing to work from without one.
+   */
   @Post("signup/social")
   async signupSocial(
     @Req() req: Request,
@@ -282,6 +286,9 @@ export class UserController {
   ) {
     try {
       const { linkedInUrl, resumeUrl, emailOrPhone } = body;
+      if (!resumeUrl?.trim()) {
+        throw new HttpException({ error: "Resume upload is required" }, 400);
+      }
       const sessionToken = (req as Request & { cookies?: Record<string, string> })
         .cookies?.session;
       const { verifySession } = await import("../common/auth");
