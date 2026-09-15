@@ -30,6 +30,7 @@ export const AVATAR_IMAGE_SRC = "/avatar-ai-questionnaire.png";
 /** Display labels for questionnaire milestones (order matches MILESTONE_CONFIG). */
 export const MILESTONE_ITEMS = [
   "About You",
+  "Skills",
   "Way of Working",
   "Self Awareness",
   "Working With Others",
@@ -45,6 +46,7 @@ export const MILESTONE_ITEMS = [
 /** Canonical milestone keys + UI labels; used for progress % and storage shape. */
 export const MILESTONE_CONFIG: { key: string; label: string }[] = [
   { key: "onboarding", label: "About You" },
+  { key: "skills", label: "Skills" },
   { key: "way_of_working", label: "Way of Working" },
   { key: "self_awareness", label: "Self Awareness" },
   { key: "working_with_others", label: "Working With Others" },
