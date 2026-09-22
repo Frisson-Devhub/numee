@@ -10,7 +10,8 @@ import { FileDropZone } from "@/components/ui/FileDropZone";
 import { LabeledInput } from "@/components/ui/LabeledInput";
 import { apiRoutes } from "@/constants/api";
 import { ApiCall } from "@/lib/utils";
-import { frontendRoutes } from "@/constants/frontendRoutes"
+import { frontendRoutes } from "@/constants/frontendRoutes";
+import { pendingSharedJobPath } from "@/lib/job-match";
 
 function LinkedInIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
@@ -20,6 +21,10 @@ function LinkedInIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
+/**
+ * Resume / LinkedIn signup step. A pending shared job skips this screen so
+ * the candidate lands on that job instead of the default assessment.
+ */
 export default function SignupSocialPage() {
   const router = useRouter();
   const [showLinkedInInput, setShowLinkedInInput] = useState(false);
@@ -36,6 +41,11 @@ export default function SignupSocialPage() {
     const identifier = sessionStorage.getItem("signupIdentifier");
     setEmailOrPhone(identifier ?? null);
   }, []);
+
+  useEffect(() => {
+    const sharedJob = pendingSharedJobPath();
+    if (sharedJob) router.replace(sharedJob);
+  }, [router]);
 
   const handleResumeChange = async (files: FileList | null) => {
     setResumeError("");
@@ -87,7 +97,7 @@ export default function SignupSocialPage() {
         setSubmitError(res.data?.error ?? res.error ?? "Something went wrong");
         return;
       }
-      router.replace(frontendRoutes.questionnaire);
+      router.replace(pendingSharedJobPath() ?? frontendRoutes.questionnaire);
     } catch {
       setSubmitError("Something went wrong. Please try again.");
     } finally {
@@ -97,13 +107,13 @@ export default function SignupSocialPage() {
 
   return (
     <AuthLayout rightPanelOverflow>
-      <AuthFormHeading
+      {/* <AuthFormHeading
         title="Create your account"
         subtitle="Connect your LinkedIn account and upload your profile and preferred job description to continue."
-      />
+      /> */}
 
       <div className="space-y-5">
-        <GradientButton
+        {/* <GradientButton
           type="button"
           className="flex items-center justify-center gap-2"
           disabled={submitLoading}
@@ -111,9 +121,9 @@ export default function SignupSocialPage() {
         >
           <LinkedInIcon className="w-6 h-6 text-white" />
           Connect with LinkedIn
-        </GradientButton>
+        </GradientButton> */}
 
-        {showLinkedInInput && (
+        {/* {showLinkedInInput && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300">
             <LabeledInput
               id="linkedin-url"
@@ -127,24 +137,24 @@ export default function SignupSocialPage() {
         )}
         <p className="text-sm text-gray-500 text-center">
           Securely import your profile & experience
-        </p>
+        </p> */}
 
-        <div className="relative">
+        {/* <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200" />
           </div>
           <div className="relative flex justify-center text-sm">
             <span className="px-3 bg-white text-gray-500 font-medium">AND</span>
           </div>
-        </div>
+        </div> */}
 
         <div className="space-y-4">
-          <FileDropZone
+          {/* <FileDropZone
             id="interested-jd"
             label="your interested JD"
             variant="document"
             accept=".pdf,.doc,.docx"
-          />
+          /> */}
           <div>
             <FileDropZone
               id="resume"
@@ -186,7 +196,7 @@ export default function SignupSocialPage() {
         )}
 
 
-        <p className="text-sm text-gray-500 text-right">
+        <p className="text-sm text-gray-500 text-center">
           Your data is secure and used only to personalize your experience. By continuing, you agree to our{" "}
           <Link href="/privacy" className="font-medium text-blue-600 hover:text-blue-700">
             Privacy Policy

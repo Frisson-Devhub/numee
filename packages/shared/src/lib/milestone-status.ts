@@ -1,4 +1,9 @@
-import { INITIAL_MILESTONE_STATUS, MILESTONE_CONFIG } from "../constants/constants";
+import {
+  DEFAULT_ASSESSMENT_ID,
+  INITIAL_MILESTONE_STATUS,
+  MILESTONE_CONFIG,
+} from "../constants/constants";
+import { frontendRoutes } from "../constants/frontendRoutes";
 import type { StoredMilestoneDocument, StoredMilestoneItem } from "../types";
 
 /** Default `resume_allowed` when creating or parsing milestone documents. */
@@ -149,4 +154,36 @@ export function getMilestoneCompletionPercent(
     });
 
     return Math.round((completed / MILESTONE_CONFIG.length) * 100);
+}
+
+/** True when every configured milestone is `completed`. */
+export function allMilestonesCompleted(
+  conversationStatus: Array<{ milestone?: string; key?: string; status: string }> | null | undefined,
+): boolean {
+  return getMilestoneCompletionPercent(conversationStatus) >= 100;
+}
+
+/** Questionnaire URL for a given assessment id (defaults to assessment1). */
+export function questionnaireHrefForAssessment(assessmentId?: string): string {
+  const id = assessmentId?.trim() || DEFAULT_ASSESSMENT_ID;
+  return `${frontendRoutes.questionnaire}?assessmentId=${encodeURIComponent(id)}`;
+}
+
+/**
+ * Apply is allowed when assessment1 has all milestones complete.
+ * Only one assessment is offered for now, so the questionnaire href is always assessment1.
+ */
+export function resolveJobApplyAssessmentGate(
+  assessments: Array<{ assessmentId: string; milestoneStatus?: unknown }>,
+): { canApply: boolean; assessmentHref: string } {
+  const primary = assessments.find(
+    (row) => row.assessmentId === DEFAULT_ASSESSMENT_ID,
+  );
+  const canApply = allMilestonesCompleted(
+    parseStoredMilestoneStatus(primary?.milestoneStatus).milestones,
+  );
+  return {
+    canApply,
+    assessmentHref: questionnaireHrefForAssessment(DEFAULT_ASSESSMENT_ID),
+  };
 }

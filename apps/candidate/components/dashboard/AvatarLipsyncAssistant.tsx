@@ -17,6 +17,7 @@ import { Modal } from "../ui/Modal";
 import { apiRoutes } from "@/constants/api";
 import { MILESTONE_CONFIG } from "@/constants/constants";
 import { frontendRoutes } from "@/constants/frontendRoutes";
+import { clearPendingSharedJob, sharedJobReturnPath } from "@/lib/job-match";
 import type { AgentState } from "@livekit/components-react";
 import { AgentAudioVisualizerAura } from "@/components/agent-audio-visualizer-aura";
 import { CircularMilestoneProgress } from "./CircularMilestoneProgress";
@@ -299,6 +300,10 @@ function deriveAgentVisualizerState(
     return "listening";
 }
 
+/**
+ * Live assessment assistant. Ending the session goes to the pending shared job
+ * when this tab started from a `?source=` link; otherwise the dashboard.
+ */
 export function AvatarLipsyncAssistant({
     assessmentId = "assessment1",
     initialQuestionAnswerPairs,
@@ -573,7 +578,9 @@ export function AvatarLipsyncAssistant({
             }
         }
         stopConversation();
-        router.push(frontendRoutes.dashboard);
+        const returnToJob = sharedJobReturnPath();
+        if (returnToJob) clearPendingSharedJob();
+        router.push(returnToJob ?? frontendRoutes.dashboard);
     }, [stopConversation, router, assessmentId]);
 
     const startConversation = useCallback(async () => {

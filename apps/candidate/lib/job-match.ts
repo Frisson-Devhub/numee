@@ -24,6 +24,15 @@ export type JobMatchExplainFields = {
 };
 
 const MATCH_EXPLAIN_STORAGE_KEY = "numee_candidate_job_match_explain";
+const PENDING_SHARED_JOB_KEY = "numee_candidate_pending_shared_job";
+
+/** Job opened from an external share (`?source=`), remembered across login. */
+export type PendingSharedJob = {
+  jobId: string;
+  source: string;
+  /** True after the first post-auth landing on the job; assessment can still return here. */
+  authConsumed?: boolean;
+};
 
 type StashedMatchExplain = JobMatchExplainFields & { jobId: string };
 
@@ -136,5 +145,88 @@ export function readStashedJobMatchExplain(
     return fields;
   } catch {
     return null;
+  }
+}
+
+/** Candidate job detail path for a stored/shared job id. */
+export function jobDetailPath(jobId: string): string {
+  return `/user/jobs/${encodeURIComponent(jobId)}`;
+}
+
+/**
+ * Job detail path when this tab has both a shared job id and `source`.
+ * Used after signup/login so we skip the default assessment onboarding screen.
+ * Returns null once {@link markPendingSharedJobAuthConsumed} has run (dashboard
+ * should not keep yanking the user back to the job).
+ */
+export function pendingSharedJobPath(): string | null {
+  const pending = readPendingSharedJob();
+  if (!pending?.jobId || !pending.source?.trim() || pending.authConsumed) return null;
+  return jobDetailPath(pending.jobId);
+}
+
+/**
+ * Job detail path after the assessment ends, even if post-auth landing already happened.
+ */
+export function sharedJobReturnPath(): string | null {
+  const pending = readPendingSharedJob();
+  if (!pending?.jobId || !pending.source?.trim()) return null;
+  return jobDetailPath(pending.jobId);
+}
+
+/**
+ * Keep the shared job for post-assessment return, but stop DashboardShell
+ * from redirecting on every dashboard visit.
+ */
+export function markPendingSharedJobAuthConsumed(): void {
+  if (typeof window === "undefined") return;
+  const pending = readPendingSharedJob();
+  if (!pending?.jobId || !pending.source?.trim()) return;
+  try {
+    const payload: PendingSharedJob = {
+      jobId: pending.jobId,
+      source: pending.source,
+      authConsumed: true,
+    };
+    window.sessionStorage.setItem(PENDING_SHARED_JOB_KEY, JSON.stringify(payload));
+  } catch {
+    // sessionStorage may be unavailable (private mode).
+  }
+}
+
+/**
+ * Remember a shared job (`?source=`) so login/signup can return to it.
+ */
+export function stashPendingSharedJob(jobId: string, source: string): void {
+  if (typeof window === "undefined" || !jobId || !source.trim()) return;
+  try {
+    const payload: PendingSharedJob = { jobId, source: source.trim() };
+    window.sessionStorage.setItem(PENDING_SHARED_JOB_KEY, JSON.stringify(payload));
+  } catch {
+    // sessionStorage may be unavailable (private mode).
+  }
+}
+
+/** Pending shared job from this tab, or null. */
+export function readPendingSharedJob(): PendingSharedJob | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(PENDING_SHARED_JOB_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PendingSharedJob;
+    if (!parsed?.jobId || typeof parsed.jobId !== "string") return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+/** Drop the pending shared-job intent after it has been consumed. */
+export function clearPendingSharedJob(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(PENDING_SHARED_JOB_KEY);
+  } catch {
+    // ignore
   }
 }

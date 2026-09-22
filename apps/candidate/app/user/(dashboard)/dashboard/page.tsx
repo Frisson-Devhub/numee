@@ -210,7 +210,7 @@ export default function DashboardPage() {
                         />
                     )}
                 </section>
-                {!noAssessmentInitiated && showDropdown && (
+                {/* {!noAssessmentInitiated && showDropdown && (
                     <select
                         value={effectiveSelected}
                         onChange={(e) => setSelectedAssessment(e.target.value)}
@@ -223,7 +223,7 @@ export default function DashboardPage() {
                             </option>
                         ))}
                     </select>
-                )}
+                )} */}
             </div>
             <div className="space-y-4">
                 <div className="min-w-0 grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4">

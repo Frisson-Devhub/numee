@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
+import { resolveJobApplyAssessmentGate } from "@numee/shared/server";
 import { SessionGuard } from "../common/guards/session.guard";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import type { SessionPayload } from "../common/auth";
@@ -139,7 +140,7 @@ export class CandidateJobsController {
     return { applications: rows.slice(0, limit), hasMore, offset, limit };
   }
 
-  /** Published job details, scoped to the authenticated candidate. */
+  /** Published or closed job details, including whether the candidate may apply. */
   @Get(":id")
   async getJob(
     @CurrentUser() user: SessionPayload,
@@ -147,10 +148,11 @@ export class CandidateJobsController {
   ) {
     const candidateId = await this.requireCandidate(user);
     const job = await this.prisma.job.findFirst({
-      where: { id, status: "PUBLISHED" },
+      where: { id, status: { in: ["PUBLISHED", "CLOSED"] } },
       select: {
         id: true,
         title: true,
+        status: true,
         department: true,
         employmentType: true,
         workMode: true,
@@ -180,7 +182,7 @@ export class CandidateJobsController {
     });
 
     if (!job) {
-      throw new HttpException({ error: "Published job not found" }, 404);
+      throw new HttpException({ error: "Job not found" }, 404);
     }
 
     const application = job.applications[0];
@@ -196,6 +198,7 @@ export class CandidateJobsController {
         .replace(/\s+/g, " ")
         .trim(),
     );
+    const assessmentGate = await this.resolveApplyAssessment(candidateId);
 
     return {
       job: {
@@ -206,11 +209,13 @@ export class CandidateJobsController {
         hasApplied: Boolean(application),
         applicationStatus: application?.status ?? null,
         appliedAt: application?.appliedAt ?? null,
+        canApply: assessmentGate.canApply,
+        assessmentHref: assessmentGate.assessmentHref,
       },
     };
   }
 
-  /** Create a candidate application. Repeated requests are idempotent. */
+  /** Create a candidate application. Requires a completed assessment. Repeated requests are idempotent. */
   @Post(":id/apply")
   async applyToJob(
     @CurrentUser() user: SessionPayload,
@@ -223,6 +228,17 @@ export class CandidateJobsController {
     });
     if (!job) {
       throw new HttpException({ error: "Published job not found" }, 404);
+    }
+
+    const assessmentGate = await this.resolveApplyAssessment(candidateId);
+    if (!assessmentGate.canApply) {
+      throw new HttpException(
+        {
+          error: "Complete your assessment before applying",
+          assessmentHref: assessmentGate.assessmentHref,
+        },
+        403,
+      );
     }
 
     const existing = await this.prisma.jobApplication.findUnique({
@@ -257,26 +273,40 @@ export class CandidateJobsController {
     }
   }
 
-  /** Browse published jobs (optional industry filter). */
+  /** Browse published and closed jobs the candidate has not applied to. */
   @Get()
   async listJobs(
+    @CurrentUser() user: SessionPayload,
     @Query("industryId") industryId?: string,
+    @Query("status") status?: string,
     @Query("limit") limitParam?: string,
     @Query("offset") offsetParam?: string,
   ) {
     try {
+      const candidateId = await this.requireCandidate(user);
       const limit = limitParam ? Number(limitParam) : 20;
       const offset = offsetParam ? Number(offsetParam) : 0;
       return await this.match.listPublishedJobs({
+        candidateId,
         industryId,
+        status,
         limit: Number.isFinite(limit) ? limit : 20,
         offset: Number.isFinite(offset) ? offset : 0,
       });
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      console.error("List published jobs error:", error);
+      console.error("List jobs error:", error);
       throw new HttpException({ error: "Failed to list jobs" }, 500);
     }
+  }
+
+  /** Apply requires at least one fully completed assessment. */
+  private async resolveApplyAssessment(candidateId: string) {
+    const assessments = await this.prisma.assessment.findMany({
+      where: { userId: candidateId },
+      select: { assessmentId: true, milestoneStatus: true },
+    });
+    return resolveJobApplyAssessmentGate(assessments);
   }
 
   private async requireCandidate(user: SessionPayload): Promise<string> {

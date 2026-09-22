@@ -1,7 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Briefcase, Building2, MapPin, Search, Sparkles } from "lucide-react";
+import {
+  Briefcase,
+  Building2,
+  FlaskConical,
+  MapPin,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
 import { apiRoutes } from "@/constants/api";
 import { DASHBOARD_CARD_CLASS } from "@/constants/constants";
@@ -15,6 +21,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { JobMatchBadge } from "@/components/jobs/JobMatchBadge";
 import { JobMatchCardPreview } from "@/components/jobs/JobMatchExplain";
+import { JobStatusTag } from "@/components/jobs/JobStatusTag";
 
 type JobMatch = {
   jobId: string;
@@ -31,6 +38,16 @@ type JobMatch = {
   snippet: string | null;
   status: string;
 } & JobMatchExplainFields;
+
+type FilterSelectProps = {
+  value: string;
+  onChange: (value: string) => void;
+  ariaLabel: string;
+  options: {
+    value: string;
+    label: string;
+  }[];
+};
 
 type BrowseJob = Omit<JobMatch, "score">;
 
@@ -110,9 +127,31 @@ function EmptyState({
   );
 }
 
+function FilterSelect({
+  value,
+  onChange,
+  ariaLabel,
+  options,
+}: FilterSelectProps) {
+  return (
+    <select
+      className="w-full min-w-0 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#205ec5] sm:w-40"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label={ariaLabel}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 /**
  * Job browse + AI match: optional embedding then Qdrant match, with industry
- * filter browse when not matching.
+ * and status filters on browse (handled by the API).
  */
 export default function JobsPage() {
   const [query, setQuery] = useState("");
@@ -123,32 +162,35 @@ export default function JobsPage() {
 
   const [industries, setIndustries] = useState<IndustryOption[]>([]);
   const [industryId, setIndustryId] = useState("");
+  const [status, setStatus] = useState("");
   const [browseLoading, setBrowseLoading] = useState(true);
   const [browseError, setBrowseError] = useState<string | null>(null);
   const [browseJobs, setBrowseJobs] = useState<BrowseJob[]>([]);
 
-  const loadBrowse = useCallback(async (selectedIndustryId?: string) => {
-    setBrowseLoading(true);
-    setBrowseError(null);
-    const params = new URLSearchParams({ limit: "20" });
-    if (selectedIndustryId) params.set("industryId", selectedIndustryId);
-    const res = await ApiCall<{
-      jobs?: BrowseJob[];
-      error?: string;
-    }>({
-      url: `${apiRoutes.user.jobs}?${params.toString()}`,
-      method: "GET",
-    });
-    setBrowseLoading(false);
-    if (!res.ok) {
-      setBrowseError(
-        res.data?.error ?? res.error ?? "Failed to load published jobs",
-      );
-      setBrowseJobs([]);
-      return;
-    }
-    setBrowseJobs(res.data?.jobs ?? []);
-  }, []);
+  const loadBrowse = useCallback(
+    async (filters?: { industryId?: string; status?: string }) => {
+      setBrowseLoading(true);
+      setBrowseError(null);
+      const params = new URLSearchParams({ limit: "20" });
+      if (filters?.industryId) params.set("industryId", filters.industryId);
+      if (filters?.status) params.set("status", filters.status);
+      const res = await ApiCall<{
+        jobs?: BrowseJob[];
+        error?: string;
+      }>({
+        url: `${apiRoutes.user.jobs}?${params.toString()}`,
+        method: "GET",
+      });
+      setBrowseLoading(false);
+      if (!res.ok) {
+        setBrowseError(res.data?.error ?? res.error ?? "Failed to load jobs");
+        setBrowseJobs([]);
+        return;
+      }
+      setBrowseJobs(res.data?.jobs ?? []);
+    },
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -162,7 +204,7 @@ export default function JobsPage() {
       if (!cancelled && industriesRes.ok) {
         setIndustries(industriesRes.data?.industries ?? []);
       }
-      if (!cancelled) await loadBrowse("");
+      if (!cancelled) await loadBrowse();
     })().catch((e) => {
       if (!cancelled) {
         setBrowseError(e instanceof Error ? e.message : "Failed to load jobs");
@@ -207,9 +249,7 @@ export default function JobsPage() {
       );
     } catch (error) {
       setMatchError(
-        matchErrorMessage(
-          error instanceof Error ? error.message : undefined,
-        ),
+        matchErrorMessage(error instanceof Error ? error.message : undefined),
       );
       setMatches([]);
     } finally {
@@ -254,13 +294,15 @@ export default function JobsPage() {
             type="button"
             loading={matching}
             onClick={() => void findMatches()}
-            className="h-11 shrink-0 px-6 py-0 text-sm sm:w-auto sm:min-w-48"
+            className="h-11 shrink-0 px-5 py-0 text-sm sm:w-auto sm:min-w-48"
             aria-label={
-              matching ? "Finding AI matches" : "Find AI matches for your profile"
+              matching
+                ? "Finding AI matches"
+                : "Find AI matches for your profile — experimental feature"
             }
           >
-            <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-            {matching ? "Finding matches…" : "Find AI Match"}
+            <FlaskConical className="h-4 w-4 shrink-0" aria-hidden />
+            {matching ? "Finding matches…" : "AI Match · Experimental"}
           </GradientButton>
         </div>
 
@@ -373,29 +415,43 @@ export default function JobsPage() {
       <section className={DASHBOARD_CARD_CLASS}>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Browse published jobs
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">Browse jobs</h2>
             <p className="mt-0.5 text-sm text-gray-500">
-              Explore open roles, optionally filtered by industry.
+              Explore open and closed roles, optionally filtered by status or
+              industry.
             </p>
           </div>
-          <select
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#205ec5]"
-            value={industryId}
-            onChange={(e) => {
-              const next = e.target.value;
-              setIndustryId(next);
-              void loadBrowse(next);
-            }}
-          >
-            <option value="">All industries</option>
-            {industries.map((ind) => (
-              <option key={ind.id} value={ind.id}>
-                {ind.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <FilterSelect
+              value={status}
+              onChange={(next) => {
+                setStatus(next);
+                void loadBrowse({ industryId, status: next });
+              }}
+              ariaLabel="Filter jobs by status"
+              options={[
+                { value: "", label: "All statuses" },
+                { value: "PUBLISHED", label: "Active" },
+                { value: "CLOSED", label: "Closed" },
+              ]}
+            />
+
+            <FilterSelect
+              value={industryId}
+              onChange={(next) => {
+                setIndustryId(next);
+                void loadBrowse({ industryId: next, status });
+              }}
+              ariaLabel="Filter jobs by industry"
+              options={[
+                { value: "", label: "All industries" },
+                ...industries.map((ind) => ({
+                  value: ind.id,
+                  label: ind.name,
+                })),
+              ]}
+            />
+          </div>
         </div>
 
         {browseLoading && (
@@ -412,10 +468,10 @@ export default function JobsPage() {
 
         {!browseLoading && !browseError && browseJobs.length === 0 && (
           <EmptyState
-            title="No published jobs"
+            title="No jobs yet"
             description={
-              industryId
-                ? "Try another industry, or clear the filter."
+              industryId || status
+                ? "Try another status or industry, or clear the filters."
                 : "Check back soon for new open roles."
             }
           />
@@ -429,21 +485,36 @@ export default function JobsPage() {
                   href={`/user/jobs/${job.jobId}`}
                   className="block px-4 py-4 transition-colors hover:bg-blue-50/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#205ec5]"
                 >
-                  <p className="font-semibold text-gray-900">{job.title}</p>
-                  <JobMeta
-                    companyName={job.companyName}
-                    industryName={job.industryName}
-                    jobRoleName={job.jobRoleName}
-                    location={job.location}
-                    workMode={job.workMode}
-                  />
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-gray-900">{job.title}</p>
+
+                      <JobMeta
+                        companyName={job.companyName}
+                        industryName={job.industryName}
+                        jobRoleName={job.jobRoleName}
+                        location={job.location}
+                        workMode={job.workMode}
+                      />
+                    </div>
+
+                    <div className="shrink-0 self-start">
+                      <JobStatusTag
+                        status={job.status}
+                        className="uppercase tracking-wide"
+                      />
+                    </div>
+                  </div>
+
                   {job.snippet && (
                     <p className="mt-2.5 text-sm leading-5 text-gray-600 line-clamp-2">
                       {job.snippet}
                     </p>
                   )}
                   <p className="mt-2 text-xs text-gray-500">
-                    Run AI Match above to see your fit for this role
+                    {job.status === "CLOSED"
+                      ? "This role is no longer accepting applications"
+                      : "Run AI Match above to see your fit for this role"}
                   </p>
                 </Link>
               </li>

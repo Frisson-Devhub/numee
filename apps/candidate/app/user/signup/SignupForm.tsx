@@ -15,6 +15,7 @@ import { OTPSentModal } from "@/components/ui/OTPSentModal";
 import { apiRoutes } from "@/constants/api";
 import { ApiCall } from "@/lib/utils";
 import { frontendRoutes } from "@/constants/frontendRoutes";
+import { stashPendingSharedJob } from "@/lib/job-match";
 import { Formik, Form, ErrorMessage, FormikHelpers } from "formik";
 import { SignupSchema } from "@/constants/formikSchema";
 import { SignupDataInterface } from "@/interfaces/types";
@@ -44,7 +45,10 @@ function getTypeEmailOrPhone(value: string): string {
 
 
 
-/** Candidate signup: posts to Nest, then shows OTP modal and routes to verify-code. */
+/**
+ * Candidate signup: posts to Nest, then shows OTP modal and routes to verify-code.
+ * Re-stashes a shared job from `?pendingJob=&source=` so post-verify can open that job.
+ */
 export default function SignupForm() {
     const data: SignupDataInterface = {
         firstName: "",
@@ -91,6 +95,13 @@ export default function SignupForm() {
             setSubmitting(false);
         }
     };
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const pendingJob = params.get("pendingJob")?.trim();
+        const source = params.get("source")?.trim();
+        if (pendingJob && source) stashPendingSharedJob(pendingJob, source);
+    }, []);
 
     useEffect(() => {
         // Check if user has already initiated signup and been redirected to verify-code
