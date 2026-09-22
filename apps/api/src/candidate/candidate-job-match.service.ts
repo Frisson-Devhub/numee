@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from "@nestjs/common";
+import type { JobStatus, Prisma } from "@prisma/client";
 import OpenAI from "openai";
 import { PrismaService } from "../prisma/prisma.service";
 import {
@@ -21,6 +22,8 @@ const MAX_LIMIT = 20;
 const SEARCH_TIMEOUT_MS = 8_000;
 const BROWSE_DEFAULT_LIMIT = 20;
 const BROWSE_MAX_LIMIT = 50;
+/** Jobs a candidate can browse and open — drafts stay recruiter-only. */
+const CANDIDATE_VISIBLE_STATUSES: JobStatus[] = ["PUBLISHED", "CLOSED"];
 
 export type CandidateJobMatchResult = {
   jobId: string;
@@ -184,9 +187,26 @@ export class CandidateJobMatchService {
     });
   }
 
-  /** Browse published jobs with optional industry filter and pagination. */
+  /**
+   * Restrict browse `status` to published/closed. Empty or unknown keeps both.
+   */
+  private browseStatuses(status?: string): JobStatus[] {
+    const normalized = status?.trim().toUpperCase();
+    if (normalized === "PUBLISHED" || normalized === "CLOSED") {
+      return [normalized];
+    }
+    return CANDIDATE_VISIBLE_STATUSES;
+  }
+
+  /**
+   * Browse published and closed jobs (drafts stay recruiter-only)
+   * with optional industry/status filters and pagination.
+   * Jobs the candidate has already applied to are omitted.
+   */
   async listPublishedJobs(params: {
+    candidateId: string;
     industryId?: string;
+    status?: string;
     limit?: number;
     offset?: number;
   }): Promise<{
@@ -211,8 +231,9 @@ export class CandidateJobMatchService {
       BROWSE_MAX_LIMIT,
     );
     const skip = Math.max(0, params.offset || 0);
-    const where = {
-      status: "PUBLISHED" as const,
+    const where: Prisma.JobWhereInput = {
+      status: { in: this.browseStatuses(params.status) },
+      applications: { none: { candidateId: params.candidateId } },
       ...(params.industryId?.trim()
         ? { industryId: params.industryId.trim() }
         : {}),

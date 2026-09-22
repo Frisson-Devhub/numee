@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import sanitizeHtml from "sanitize-html";
 import {
@@ -16,20 +16,28 @@ import {
 } from "lucide-react";
 import { apiRoutes } from "@/constants/api";
 import { DASHBOARD_CARD_CLASS } from "@/constants/constants";
+import { questionnaireHrefForAssessment } from "@/lib/milestone-status";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { Spinner } from "@/components/ui/Spinner";
 import { JobMatchBadge } from "@/components/jobs/JobMatchBadge";
 import { JobMatchExplain } from "@/components/jobs/JobMatchExplain";
+import { JobStatusTag } from "@/components/jobs/JobStatusTag";
 import {
   getMatchPresentation,
   readStashedJobMatchExplain,
+  stashPendingSharedJob,
+  readPendingSharedJob,
+  clearPendingSharedJob,
+  markPendingSharedJobAuthConsumed,
   type JobMatchExplainFields,
 } from "@/lib/job-match";
 import { ApiCall } from "@/lib/utils";
+import { frontendRoutes } from "@/constants/frontendRoutes";
 
 type JobDetail = {
   id: string;
   title: string;
+  status: string;
   department: string | null;
   employmentType: string | null;
   workMode: string | null;
@@ -58,6 +66,8 @@ type JobDetail = {
   hasApplied: boolean;
   applicationStatus: string | null;
   appliedAt: string | null;
+  canApply: boolean;
+  assessmentHref: string | null;
 };
 
 const JOB_RICH_TEXT_TAGS = [
@@ -120,6 +130,7 @@ function jobSalary(job: JobDetail): string | null {
 export default function JobDetailPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const jobId = params.id;
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -143,17 +154,36 @@ export default function JobDetailPage() {
     if (!jobId) return;
     setLoading(true);
     setError(null);
+
     const res = await ApiCall<{ job?: JobDetail; error?: string }>({
       url: apiRoutes.user.job(jobId),
       method: "GET",
     });
     setLoading(false);
     if (!res.ok || !res.data?.job) {
+      const pending = readPendingSharedJob();
+      const cameFromShare =
+        Boolean(searchParams.get("source")?.trim()) || pending?.jobId === jobId;
+      if (res.status === 401 && cameFromShare) {
+        router.replace(frontendRoutes.login);
+        return;
+      }
+      if (res.status !== 401 && pending?.jobId === jobId) {
+        clearPendingSharedJob();
+      }
       setError(res.data?.error ?? res.error ?? "Failed to load this job");
       return;
     }
+    if (readPendingSharedJob()?.jobId === jobId) {
+      markPendingSharedJobAuthConsumed();
+    }
     setJob(res.data.job);
-  }, [jobId]);
+  }, [jobId, router, searchParams]);
+
+  useEffect(() => {
+    const source = searchParams.get("source")?.trim();
+    if (jobId && source) stashPendingSharedJob(jobId, source);
+  }, [jobId, searchParams]);
 
   useEffect(() => {
     void loadJob();
@@ -165,7 +195,13 @@ export default function JobDetailPage() {
   }, [jobId]);
 
   const apply = async () => {
-    if (!job || job.hasApplied) return;
+    if (!job || job.hasApplied || job.status === "CLOSED") return;
+    if (!job.canApply) {
+      router.push(
+        job.assessmentHref || questionnaireHrefForAssessment(),
+      );
+      return;
+    }
     setApplying(true);
     setApplyError(null);
     const res = await ApiCall<{
@@ -173,11 +209,20 @@ export default function JobDetailPage() {
       alreadyApplied?: boolean;
       application?: { status: string; appliedAt: string };
       error?: string;
+      assessmentHref?: string;
     }>({
       url: apiRoutes.user.jobApply(job.id),
       method: "POST",
     });
     setApplying(false);
+    if (res.status === 403) {
+      router.push(
+        res.data?.assessmentHref ||
+        job.assessmentHref ||
+        questionnaireHrefForAssessment(),
+      );
+      return;
+    }
     if (!res.ok || !res.data?.success) {
       setApplyError(res.data?.error ?? res.error ?? "Could not submit your application");
       return;
@@ -185,11 +230,11 @@ export default function JobDetailPage() {
     setJob((current) =>
       current
         ? {
-            ...current,
-            hasApplied: true,
-            applicationStatus: res.data?.application?.status ?? "APPLIED",
-            appliedAt: res.data?.application?.appliedAt ?? new Date().toISOString(),
-          }
+          ...current,
+          hasApplied: true,
+          applicationStatus: res.data?.application?.status ?? "APPLIED",
+          appliedAt: res.data?.application?.appliedAt ?? new Date().toISOString(),
+        }
         : current,
     );
   };
@@ -235,7 +280,10 @@ export default function JobDetailPage() {
       <section className={DASHBOARD_CARD_CLASS}>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold text-gray-900">{job.title}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-semibold text-gray-900">{job.title}</h1>
+              <JobStatusTag status={job.status} />
+            </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
               <span className="inline-flex items-center gap-1.5">
                 <Building2 className="h-4 w-4" />
@@ -277,6 +325,33 @@ export default function JobDetailPage() {
                   {job.applicationStatus ? ` · ${job.applicationStatus}` : ""}
                 </span>
               </div>
+            ) : job.status === "CLOSED" ? (
+              <div
+                className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-5 text-sm font-semibold text-gray-600"
+                role="status"
+                aria-label="This role is closed"
+              >
+                No longer accepting applications
+              </div>
+            ) : !job.canApply ? (
+              <>
+                <GradientButton
+                  type="button"
+                  className="h-11 w-full px-6 py-0 text-sm"
+                  onClick={() => {
+                    router.push(
+                      job.assessmentHref || questionnaireHrefForAssessment(),
+                    );
+                  }}
+                  aria-label="Complete your assessment to apply"
+                >
+                  Complete & Apply
+                </GradientButton>
+
+                <p className="text-center text-[8px] font-medium leading-5 text-red-600 sm:text-[10px]">
+                  You must complete your assessment before you can apply for this role.
+                </p>
+              </>
             ) : (
               <GradientButton
                 type="button"
@@ -357,11 +432,10 @@ export default function JobDetailPage() {
             {job.skills.map((skill) => (
               <span
                 key={skill.id}
-                className={`rounded-full px-3 py-1 text-sm ${
-                  skill.required
+                className={`rounded-full px-3 py-1 text-sm ${skill.required
                     ? "bg-blue-50 font-medium text-[#205ec5]"
                     : "bg-gray-100 text-gray-700"
-                }`}
+                  }`}
               >
                 {skill.name}
                 {skill.required ? " · Required" : ""}

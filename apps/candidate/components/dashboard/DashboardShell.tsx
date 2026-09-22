@@ -1,14 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Header } from "@/components/dashboard/Header";
+import { pendingSharedJobPath } from "@/lib/job-match";
 
 const SIDEBAR_LG = "(min-width: 1024px)";
 
 /** App shell: sidebar open by default on `lg+`, overlay drawer on smaller screens. */
 export function DashboardShell({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const pathname = usePathname();
+    const router = useRouter();
 
     useEffect(() => {
         const mq = window.matchMedia(SIDEBAR_LG);
@@ -17,6 +21,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         mq.addEventListener("change", update);
         return () => mq.removeEventListener("change", update);
     }, []);
+
+    useEffect(() => {
+        const target = pendingSharedJobPath();
+        if (!target) return;
+        if (pathname === target) return;
+        // Leave other job-detail URLs alone; that page owns the share stash.
+        if (/^\/user\/jobs\/[^/]+$/.test(pathname)) return;
+        router.replace(target);
+    }, [pathname, router]);
 
     return (
         <div className="flex h-dvh min-h-dvh overflow-hidden bg-gray-50">

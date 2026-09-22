@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { AuthFormHeading } from "@/components/auth/AuthFormHeading";
 import { MobileAuthLayout } from "@/components/auth/MobileAuthLayout";
@@ -15,6 +15,7 @@ import { AuthCallout } from "@numee/shared/components";
 import { apiRoutes } from "@/constants/api";
 import { ApiCall } from "@/lib/utils";
 import { frontendRoutes } from "@/constants/frontendRoutes";
+import { pendingSharedJobPath, stashPendingSharedJob } from "@/lib/job-match";
 import { Formik, Form, ErrorMessage, FormikHelpers } from "formik";
 import { LoginSchema } from "@/constants/formikSchema";
 import { LoginDataInterface } from "@/interfaces/types";
@@ -26,12 +27,13 @@ type LoginFormProps = {
 };
 
 /**
- * Candidate login. Honors Nest `redirectTo`, links to recruiter login via
- * `NEXT_PUBLIC_RECRUITER_URL`, and supports a compact mobile layout.
- * Admin credentials are rejected by the candidate auth API.
+ * Candidate login. Honors a pending shared job in sessionStorage (including
+ * after signup), Nest `redirectTo`, recruiter login via `NEXT_PUBLIC_RECRUITER_URL`,
+ * and a compact mobile layout. Admin credentials are rejected by the candidate auth API.
  */
 export default function LoginForm({ errorFromQuery, variant = "default" }: LoginFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useI18n();
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
@@ -44,6 +46,19 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
   useEffect(() => {
     if (errorFromQuery) setError(errorFromQuery);
   }, [errorFromQuery]);
+
+  useEffect(() => {
+    const pendingJob = searchParams.get("pendingJob")?.trim();
+    const source = searchParams.get("source")?.trim() || "shared";
+    if (pendingJob) stashPendingSharedJob(pendingJob, source);
+  }, [searchParams]);
+
+  const pendingJobQuery = searchParams.get("pendingJob")?.trim();
+  const sourceQuery = searchParams.get("source")?.trim();
+  const signupHref =
+    pendingJobQuery && sourceQuery
+      ? `${frontendRoutes.signup}?pendingJob=${encodeURIComponent(pendingJobQuery)}&source=${encodeURIComponent(sourceQuery)}`
+      : frontendRoutes.signup;
 
   const handleLogin = async (values: LoginDataInterface, { setSubmitting }: FormikHelpers<LoginDataInterface>) => {
     setError("");
@@ -66,7 +81,10 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
       }
 
       const redirectTo = res.data?.redirectTo;
-      if (redirectTo === "social") {
+      const sharedJob = pendingSharedJobPath();
+      if (sharedJob) {
+        router.replace(sharedJob);
+      } else if (redirectTo === "social") {
         router.replace(frontendRoutes.social);
       } else if (redirectTo === "ai-questionnaire") {
         router.replace(frontendRoutes.questionnaire);
@@ -156,7 +174,7 @@ export default function LoginForm({ errorFromQuery, variant = "default" }: Login
           <p>
             Don&apos;t have an account?{" "}
             <Link
-              href="/user/signup"
+              href={signupHref}
               className="font-medium text-brand-primary transition hover:text-brand-primary-bright"
             >
               Sign up

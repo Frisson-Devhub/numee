@@ -12,10 +12,12 @@ import { MAX_RESEND_ATTEMPTS } from "@/constants/constants";
 
 import { useRouter } from "next/navigation";
 import { frontendRoutes } from "@/constants/frontendRoutes";
+import { pendingSharedJobPath } from "@/lib/job-match";
 
 /**
  * Signup OTP verify/resend. Identifier and expiry live in sessionStorage from
- * the signup form; capped by `MAX_RESEND_ATTEMPTS`.
+ * the signup form; capped by `MAX_RESEND_ATTEMPTS`. After success, a pending
+ * shared job (job + source) skips default assessment onboarding.
  */
 export default function VerifyCodePage() {
   const router = useRouter();
@@ -66,7 +68,7 @@ export default function VerifyCodePage() {
       sessionStorage.removeItem("signupResendPayload");
       sessionStorage.removeItem("signupResendAttemptsUsed");
 
-      // Show success modal, then redirect to social step
+      // Show success modal, then the shared job (if any) or the social step
       setShowSuccessModal(true);
     } catch (err) {
       console.error(err);
@@ -179,7 +181,7 @@ export default function VerifyCodePage() {
         open={showSuccessModal}
         onClose={() => {
           setShowSuccessModal(false);
-          router.replace(frontendRoutes.social);
+          router.replace(pendingSharedJobPath() ?? frontendRoutes.social);
         }}
       />
 

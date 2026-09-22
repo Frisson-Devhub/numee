@@ -99,6 +99,7 @@ export function AssessmentProgressBar({
                             {value === 0 ? t("dashboard.startAssessment") : t("assessmentProgressBar.continueAssessment")}
                         </Link>
                     )}
+                    {/* Single assessment only for now — restore to allow assessment2+.
                     {(startNewAssessmentHref || maxAssessmentsReached) && !hideProgressBar &&
                         (maxAssessmentsReached ? (
                             <button
@@ -124,6 +125,7 @@ export function AssessmentProgressBar({
                                 {t("assessmentProgressBar.startNewAssessment")}
                             </button>
                         ))}
+                    */}
                 </div>
             </div>
             <Modal open={showMilestonePopup} onClose={() => setShowMilestonePopup(false)} className="max-w-md">
