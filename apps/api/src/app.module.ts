@@ -6,6 +6,7 @@ import { CloudinaryModule } from "./cloudinary/cloudinary.module";
 import { QueueModule } from "./queue/queue.module";
 import { QdrantModule } from "./qdrant/qdrant.module";
 import { AssessmentModule } from "./assessment/assessment.module";
+import { AssessmentQueueModule } from "./assessment-queue/assessment-queue.module";
 import { AuthModule } from "./auth/auth.module";
 import { UserModule } from "./user/user.module";
 import { QuestionnaireModule } from "./questionnaire/questionnaire.module";
@@ -26,6 +27,7 @@ import { CandidateModule } from "./candidate/candidate.module";
     QueueModule,
     QdrantModule,
     AssessmentModule,
+    AssessmentQueueModule,
     AuthModule,
     UserModule,
     QuestionnaireModule,

@@ -9,6 +9,7 @@ import {
 import { INITIAL_MILESTONE_STATUS, MILESTONE_CONFIG } from "@numee/shared/server";
 import { PrismaService } from "../prisma/prisma.service";
 import { AssessmentService } from "../assessment/assessment.module";
+import { AssessmentQueueService } from "../assessment-queue/assessment-queue.service";
 import { SessionGuard } from "../common/guards/session.guard";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import type { SessionPayload } from "../common/auth";
@@ -22,6 +23,7 @@ import {
   getApiLanguage,
   isLocale,
 } from "../i18n/i18n";
+import { DEFAULT_ASSESSMENT_ID } from "@numee/shared/server";
 
 type QuestionAnswerPair = { assistant: string; user: string };
 type StoredMilestoneItem = { key: string; status: string };
@@ -146,18 +148,49 @@ export class VirtualAssistantController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly assessment: AssessmentService,
+    private readonly queue: AssessmentQueueService,
   ) {}
 
+  /**
+   * Base URL of the Python agents service.
+   *
+   * No fallback, on purpose. This used to default to a developer's ngrok tunnel, so an
+   * unset or wrong `AI_AGENT_URL` sent candidate sessions to a long-dead host and
+   * surfaced as a bare 404 from a URL nobody recognised. Failing here names the
+   * actual problem instead.
+   */
   private agentBase(): string {
-    return (
-      process.env.AI_AGENT_URL ||
-      "https://dab3-2401-4900-8846-5146-4c78-4c76-d4b1-633f.ngrok-free.app"
-    ).replace(/\/$/, "");
+    const base = process.env.AI_AGENT_URL?.trim();
+    if (!base) {
+      throw new HttpException(
+        { error: "Virtual assistant service not configured (AI_AGENT_URL)" },
+        503,
+      );
+    }
+    return base.replace(/\/$/, "");
   }
 
-  /** Proxy LiveKit/agent token for the signed-in user. */
+  /**
+   * Proxy LiveKit/agent token for the signed-in user.
+   *
+   * Gated on assessment capacity. The claim happens here rather than being trusted from
+   * the client, so a caller that skips the waiting room still cannot take a seat: an
+   * older build gets a 429 with its queue position instead of a session that would
+   * degrade everyone else's.
+   */
   @Post("get-token")
-  async getToken(@CurrentUser() user: SessionPayload) {
+  async getToken(@CurrentUser() user: SessionPayload, assessmentId?: string) {
+    // `tryClaim` returns null when admission control is unavailable (e.g. migrations
+    // have not run), in which case the assessment proceeds unmetered rather than being
+    // blocked for everybody.
+    const slot = await this.queue.tryClaim(
+      user.id!,
+      assessmentId?.trim() || DEFAULT_ASSESSMENT_ID,
+    );
+    if (slot && slot.state !== "active") {
+      throw new HttpException({ error: "Assessment is at capacity", queue: slot }, 429);
+    }
+
     try {
       const response = await fetch(`${this.agentBase()}/virtual_assistant/get-token`, {
         method: "POST",
@@ -180,6 +213,9 @@ export class VirtualAssistantController {
       }
       return data;
     } catch (error) {
+      // The seat was taken above, so a failed handshake has to give it back rather
+      // than hold it until the TTL expires.
+      await this.queue.release(user.id!).catch(() => {});
       if (error instanceof HttpException) throw error;
       console.error("Virtual assistant get-token error:", error);
       throw new HttpException(
@@ -342,7 +378,7 @@ export class VirtualAssistantController {
     },
   ) {
     if (action === "get-token") {
-      return this.getToken(user);
+      return this.getToken(user, body?.assessmentId);
     }
 
     if (action === "dispatch-agent") {

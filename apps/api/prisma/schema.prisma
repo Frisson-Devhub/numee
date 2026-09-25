@@ -124,6 +124,22 @@ model Assessment {
   @@map("assessment")
 }
 
+model AssessmentSlot {
+  userId       String   @id @map("user_id")
+  assessmentId String   @map("assessment_id")
+  /// "active" = in a live assessment, "waiting" = queued for a slot.
+  state        String
+  enqueuedAt   DateTime @default(now()) @map("enqueued_at")
+  /// Slots expire on their own: a crashed tab never calls release.
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([state, enqueuedAt])
+  @@index([expiresAt])
+  @@map("assessment_slots")
+}
+
 model Company {
   id                String   @id @default(cuid())
   name              String

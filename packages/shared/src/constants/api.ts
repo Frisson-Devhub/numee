@@ -38,6 +38,12 @@ export const apiRoutes = {
     milestoneTracker: "/api/virtual-assistant/milestone-tracker",
     notifySupport: "/api/virtual-assistant/notify-support",
   },
+  assessmentQueue: {
+    claim: "/api/assessment-queue/claim",
+    status: "/api/assessment-queue/status",
+    heartbeat: "/api/assessment-queue/heartbeat",
+    release: "/api/assessment-queue/release",
+  },
   questionnaire: {
     progress: "/api/questionnaire/progress",
     save: "/api/questionnaire/save",

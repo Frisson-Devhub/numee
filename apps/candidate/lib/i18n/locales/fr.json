@@ -119,7 +119,10 @@
         "connected": "Connecté — Session sécurisée établie.",
         "supportNotified": "Support notifié — un conseiller clientèle vous rejoindra sous peu.",
         "connectionFailed": "Échec de la connexion",
-        "supportFailed": "Échec de la connexion au support"
+        "supportFailed": "Échec de la connexion au support",
+        "queued": "Toutes les places d'évaluation sont actuellement occupées.",
+        "queuePromoted": "Une place vient de se libérer — connexion en cours.",
+        "queueFailed": "Impossible de rejoindre la file d'attente. Veuillez réessayer."
       },
       "avatarPlaceholder": "Cliquez sur « Démarrer la conversation » pour commencer l'évaluation",
       "avatarConnecting": "Connexion à votre assistante…",
@@ -143,6 +146,14 @@
         "viewVideo": "Vue vidéo",
         "viewChat": "Vue conversation",
         "viewMode": "Basculer entre vidéo et conversation"
+      },
+      "queue": {
+        "queueWaiting": "Toutes les places d'évaluation sont actuellement occupées.",
+        "queuePosition": "Vous êtes en position {position} dans la file d'attente.",
+        "queueOnePerson": "1 candidat devant vous.",
+        "queueManyPeople": "{count} candidats devant vous.",
+        "queueNext": "Vous êtes le prochain — un instant, votre session va démarrer.",
+        "queueHint": "Gardez cette page ouverte. Vous serez connecté automatiquement dès qu'une place se libère."
       }
     },
     "milestone": {

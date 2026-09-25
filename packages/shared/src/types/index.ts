@@ -219,3 +219,19 @@ export interface AssessmentProgressBarProps {
     /** When true and canStartNewAssessment is false, the popup shows "Start Your First Assessment" message (user has only one assessment). */
     isFirstAssessment?: boolean;
 }
+
+/** Whether a candidate holds a live assessment slot or is waiting for one. */
+export type AssessmentSlotState = "active" | "waiting";
+
+/** Response shape of every `/api/assessment-queue/*` endpoint. */
+export interface AssessmentSlotStatus {
+    state: AssessmentSlotState;
+    /** 1-based place in line; only present while waiting. */
+    position?: number;
+    /** Candidates waiting, including this one. */
+    waiting: number;
+    /** Candidates currently in a live assessment. */
+    activeCount: number;
+    /** Configured ceiling (`ASSESSMENT_MAX_ACTIVE`). */
+    maxActive: number;
+}

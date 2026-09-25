@@ -264,3 +264,39 @@ export function getDashboardDerivedData(payload: DashboardData | null): Dashboar
     motivationBlocks,
   };
 }
+
+/**
+ * Assessment concurrency.
+ *
+ * A live assessment pins a LiveKit room plus an agent worker, so the number that can
+ * run at once is bounded by the agent tier, not by the API. Candidates beyond the
+ * ceiling wait in a queue instead of being handed a session that will stutter.
+ *
+ * These are defaults only — `apps/api` overrides each from the environment.
+ */
+
+/** Candidates allowed in a live assessment at once. Override: `ASSESSMENT_MAX_ACTIVE`. */
+export const DEFAULT_ASSESSMENT_MAX_ACTIVE = 25;
+
+/**
+ * Seconds an active slot survives without a heartbeat.
+ *
+ * This, not the release call, is what actually frees a slot: a crashed tab or a killed
+ * browser never sends `release`, so every slot must be able to expire on its own.
+ * Override: `ASSESSMENT_ACTIVE_TTL_SECONDS`.
+ */
+export const DEFAULT_ASSESSMENT_ACTIVE_TTL_SECONDS = 90;
+
+/**
+ * Seconds a waiting entry survives without a poll. Shorter than the active TTL because
+ * a waiting candidate polls far more often, so a closed tab leaves the queue quickly
+ * rather than holding up everyone behind it.
+ * Override: `ASSESSMENT_WAITING_TTL_SECONDS`.
+ */
+export const DEFAULT_ASSESSMENT_WAITING_TTL_SECONDS = 30;
+
+/** How often a waiting candidate re-polls for its position. */
+export const ASSESSMENT_QUEUE_POLL_MS = 5_000;
+
+/** How often an active candidate refreshes its slot while connected. */
+export const ASSESSMENT_HEARTBEAT_MS = 30_000;

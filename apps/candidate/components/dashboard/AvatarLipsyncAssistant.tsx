@@ -20,10 +20,12 @@ import { frontendRoutes } from "@/constants/frontendRoutes";
 import { clearPendingSharedJob, sharedJobReturnPath } from "@/lib/job-match";
 import type { AgentState } from "@livekit/components-react";
 import { AgentAudioVisualizerAura } from "@/components/agent-audio-visualizer-aura";
+import { AssessmentQueuePanel } from "./AssessmentQueuePanel";
 import { CircularMilestoneProgress } from "./CircularMilestoneProgress";
 import { Milestone } from "./Milestone";
 import { ApiCall } from "@/lib/utils";
 import { randomId } from "@/lib/randomId";
+import { useAssessmentQueue } from "@/hooks/useAssessmentQueue";
 import {
     getMilestoneCompletionPercent,
     milestonesToUiFormat,
@@ -358,6 +360,8 @@ export function AvatarLipsyncAssistant({
     );
     const [isNotifyingSupport, setIsNotifyingSupport] = useState(false);
     const [mobileView, setMobileView] = useState<"video" | "chat">("video");
+    const { slot, waitForSlot, release: releaseSlot, isWaiting } =
+        useAssessmentQueue(assessmentId);
     const conversationIdRef = useRef<string | null>(null);
     const messagesRef = useRef<Message[]>([]);
     const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -561,8 +565,10 @@ export function AvatarLipsyncAssistant({
         conversationIdRef.current = null;
         setIsConnected(false);
         setIsEnding(false);
+        // Free the seat for whoever is next rather than waiting for the TTL.
+        releaseSlot();
         updateStatus("disconnected", "normal");
-    }, [updateStatus]);
+    }, [updateStatus, releaseSlot]);
 
     const endConversation = useCallback(async () => {
         if (hasEndedRef.current) return;
@@ -611,6 +617,13 @@ export function AvatarLipsyncAssistant({
                 const mapped = milestonesToUiFormat(doc.milestones);
                 if (mapped.length > 0) setMilestoneStatus(mapped);
             }
+
+            // Capacity gate. Under the threshold this returns immediately and the
+            // flow below is unchanged; past it the candidate waits here until a seat
+            // frees up, with `slot` driving the waiting-room UI in the meantime.
+            updateStatus("queued", "loading");
+            await waitForSlot();
+            updateStatus("connecting", "loading");
 
             const response = await ApiCall<{
                 url?: string;
@@ -813,7 +826,15 @@ export function AvatarLipsyncAssistant({
                 applyStreamUrlFallback();
             }
         } catch (error) {
+            // Leaving the waiting room is a deliberate action, not something to
+            // report as a connection failure.
+            if (error instanceof Error && error.message === "queue-abandoned") {
+                setHasStartedConversation(false);
+                updateStatus("readyToConnect", "normal");
+                return;
+            }
             console.error("Failed to start conversation:", error);
+            releaseSlot();
             updateStatus(
                 "connectionFailed",
                 "error",
@@ -822,7 +843,7 @@ export function AvatarLipsyncAssistant({
             roomRef.current = null;
             localMicRef.current = null;
         }
-    }, [updateStatus, stopConversation, addTranscriptMessage, assessmentId, isMuted, disableStartAfterFirstClick, locale]);
+    }, [updateStatus, stopConversation, addTranscriptMessage, assessmentId, isMuted, disableStartAfterFirstClick, locale, waitForSlot, releaseSlot]);
 
     const toggleMute = useCallback(() => {
         setIsMuted((prev) => {
@@ -1039,6 +1060,12 @@ export function AvatarLipsyncAssistant({
 
     return (
         <>
+            {isWaiting && slot && (
+                <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm">
+                    <AssessmentQueuePanel slot={slot} />
+                </div>
+            )}
+
             <Modal
                 open={showExecutiveConnectDialog}
                 onClose={handleExecutiveConnectNo}

@@ -119,7 +119,10 @@
         "connected": "Connected — Secure session established.",
         "supportNotified": "Support notified — a customer executive will join shortly.",
         "connectionFailed": "Connection failed",
-        "supportFailed": "Failed to connect to support"
+        "supportFailed": "Failed to connect to support",
+        "queued": "All assessment slots are currently in use.",
+        "queuePromoted": "A slot just opened — connecting you now.",
+        "queueFailed": "Could not join the assessment queue. Please try again."
       },
       "avatarPlaceholder": "Click on Start Conversation to start the assessment",
       "avatarConnecting": "Connecting to your assistant…",
@@ -143,6 +146,14 @@
         "viewVideo": "Video view",
         "viewChat": "Chat view",
         "viewMode": "Switch between video and chat"
+      },
+      "queue": {
+        "queueWaiting": "All assessment slots are currently in use.",
+        "queuePosition": "You are number {position} in line.",
+        "queueOnePerson": "1 candidate ahead of you.",
+        "queueManyPeople": "{count} candidates ahead of you.",
+        "queueNext": "You are next — hold on, your session is about to start.",
+        "queueHint": "Keep this page open. You will be connected automatically as soon as a slot frees up."
       }
     },
     "milestone": {

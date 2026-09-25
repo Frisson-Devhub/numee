@@ -119,7 +119,10 @@
         "connected": "Verbunden — Sichere Sitzung hergestellt.",
         "supportNotified": "Support benachrichtigt — ein Kundenbetreuer wird in Kürze beitreten.",
         "connectionFailed": "Verbindung fehlgeschlagen",
-        "supportFailed": "Verbindung zum Support fehlgeschlagen"
+        "supportFailed": "Verbindung zum Support fehlgeschlagen",
+        "queued": "Derzeit sind alle Assessment-Plätze belegt.",
+        "queuePromoted": "Ein Platz ist frei geworden — Sie werden jetzt verbunden.",
+        "queueFailed": "Beitritt zur Warteschlange nicht möglich. Bitte versuchen Sie es erneut."
       },
       "avatarPlaceholder": "Klicken Sie auf „Gespräch starten“, um die Bewertung zu beginnen",
       "avatarConnecting": "Verbindung mit Ihrer Assistentin wird hergestellt…",
@@ -143,6 +146,14 @@
         "viewVideo": "Video-Ansicht",
         "viewChat": "Chat-Ansicht",
         "viewMode": "Zwischen Video und Chat wechseln"
+      },
+      "queue": {
+        "queueWaiting": "Derzeit sind alle Assessment-Plätze belegt.",
+        "queuePosition": "Sie sind Nummer {position} in der Warteschlange.",
+        "queueOnePerson": "1 Kandidat vor Ihnen.",
+        "queueManyPeople": "{count} Kandidaten vor Ihnen.",
+        "queueNext": "Sie sind als Nächstes an der Reihe — einen Moment, Ihre Sitzung startet gleich.",
+        "queueHint": "Lassen Sie diese Seite geöffnet. Sie werden automatisch verbunden, sobald ein Platz frei wird."
       }
     },
     "milestone": {

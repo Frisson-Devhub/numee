@@ -7,6 +7,7 @@
     "build": "nest build && tsc-alias -p tsconfig.build.json",
     "start": "node dist/apps/api/src/main.js",
     "typecheck": "tsc --noEmit",
+    "test": "node --test --import tsx \"test/**/*.test.ts\"",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
